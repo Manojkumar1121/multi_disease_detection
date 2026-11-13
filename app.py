@@ -5,6 +5,13 @@ import altair as alt
 import theme
 from data import DEFAULT_DATASET_PATH
 from train import train_pipeline
+from explain import (
+    check_red_flags,
+    check_weak_input,
+    compute_leave_one_out_importance,
+    build_top3_chart,
+    build_importance_chart,
+)
 
 
 
@@ -185,10 +192,24 @@ def dashboard_page():
         ])
 
     if submitted:
+        # 1. Red-flag emergency detection (evaluated regardless of model confidence)
+        has_red_flags, red_flag_triggers = check_red_flags(selected)
+        if has_red_flags:
+            st.error("🚨 **These symptoms can indicate an emergency. Seek urgent medical care.**")
+            with st.expander("⚠️ Identified Emergency Risk Pattern(s)", expanded=True):
+                for rule_desc in red_flag_triggers:
+                    st.write(f"- {rule_desc}")
+                st.caption(
+                    "If you or the patient are experiencing acute chest pain, severe shortness of breath, "
+                    "or sudden collapse, call emergency medical services immediately."
+                )
+
+        # 2. Model inference
         x_input = pd.DataFrame([[1 if c in selected else 0 for c in symptom_cols]], columns=symptom_cols)
         sample_res = ensemble.predict_sample(x_input)
         final_pred = sample_res["final_prediction"]
         confidence = sample_res["confidence"]
+        top3 = sample_res["top3"]
         pred_log = sample_res["individual_preds"]["Logistic Regression"]
         pred_rf = sample_res["individual_preds"]["Random Forest"]
         pred_svc = sample_res["individual_preds"]["SVC"]
@@ -196,11 +217,46 @@ def dashboard_page():
         st.subheader("Results")
         st.write(f"*Patient:* {username if username else 'Anonymous'} | *Age:* {int(age)}")
         st.write(f"*Selected symptoms:* {', '.join(selected) if selected else 'None'}")
-        cols = st.columns(3)
-        cols[0].metric("Logistic Regression", str(pred_log))
-        cols[1].metric("Random Forest", str(pred_rf))
-        cols[2].metric("SVC", str(pred_svc))
-        st.success(f"🎯 **Final prediction (soft-voting ensemble):** {final_pred} (Confidence: {confidence:.1%})")
+
+        # 3. Weak-input safety guard
+        is_weak, weak_msg = check_weak_input(selected, confidence)
+        if is_weak:
+            st.warning("⚠️ **Not enough information**")
+            st.info(
+                f"{weak_msg}\n\n"
+                "*Suggestion:* Please add more symptoms for a more reliable differential, "
+                "or consult a qualified healthcare professional."
+            )
+            recorded_prediction = "Not enough information"
+        else:
+            recorded_prediction = final_pred
+            cols = st.columns(3)
+            cols[0].metric("Logistic Regression", str(pred_log))
+            cols[1].metric("Random Forest", str(pred_rf))
+            cols[2].metric("SVC", str(pred_svc))
+            st.success(f"🎯 **Final prediction (soft-voting ensemble):** {final_pred} (Confidence: {confidence:.1%})")
+
+            # Top 3 diseases horizontal bar chart (Altair)
+            st.markdown("#### Top 3 Disease Candidates")
+            st.altair_chart(build_top3_chart(top3), use_container_width=True)
+
+            # Leave-one-symptom-out feature attribution
+            st.markdown("#### Symptom Attribution (Leave-One-Symptom-Out)")
+            st.caption("Marginal probability drop when each selected symptom is excluded:")
+            importance_data = compute_leave_one_out_importance(
+                ensemble=ensemble,
+                selected_symptoms=selected,
+                symptom_cols=symptom_cols,
+                top_class=final_pred,
+                baseline_confidence=confidence,
+            )
+            if importance_data:
+                st.altair_chart(build_importance_chart(importance_data), use_container_width=True)
+
+            st.divider()
+            st.subheader("Recommended Precautions")
+            for tip in get_precautions(final_pred):
+                st.write(f"- {tip}")
 
         with st.expander("Model probabilities (if available)"):
             for m_name, proba_dict in sample_res["individual_probas"].items():
@@ -208,11 +264,9 @@ def dashboard_page():
                 st.write({k: round(float(v), 3) for k, v in proba_dict.items()})
             st.write("**Ensemble (Soft-Voting)**")
             st.write({k: round(float(v), 3) for k, v in sample_res["all_probas"].items()})
-        st.divider()
-        st.subheader("Recommended Precautions")
-        for tip in get_precautions(final_pred):
-            st.write(f"- {tip}")
+
         st.info("*Note:* This tool is for educational purposes and not a medical diagnosis. Please consult a qualified clinician for medical advice.")
+
         # --- Save to history ---
         st.session_state["history"].append({
             "Patient": username if username else 'Anonymous',
@@ -221,7 +275,9 @@ def dashboard_page():
             "Pred_LogisticRegression": pred_log,
             "Pred_RandomForest": pred_rf,
             "Pred_SVC": pred_svc,
-            "FinalPrediction": final_pred,
+            "FinalPrediction": recorded_prediction,
+            "Confidence": confidence,
+            "Top3": top3,
         })
     else:
         st.caption("Fill the form and click Predict to see results.")
