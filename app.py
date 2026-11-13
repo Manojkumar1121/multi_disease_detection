@@ -19,6 +19,8 @@ from auth import (
     save_assessment,
     get_user_assessments,
 )
+from precautions import get_precautions_for_disease
+from report import generate_pdf_report
 
 
 
@@ -180,21 +182,6 @@ def dashboard_page():
         selected = st.multiselect("Select your symptoms", options=symptom_cols, default=[])
         submitted = st.form_submit_button("Predict")
 
-    PRECAUTIONS = {
-        "Asthma": [
-            "Use your prescribed inhaler as directed.",
-            "Avoid known triggers (smoke, dust, cold air).",
-            "Warm-up before exercise and keep rescue inhaler handy."
-        ],
-        # ... (other disease precautions unchanged)
-    }
-    def get_precautions(label: str):
-        return PRECAUTIONS.get(label, [
-            "Consult a healthcare professional for personalized advice.",
-            "Rest, stay hydrated, and monitor your symptoms.",
-            "Seek urgent care if symptoms worsen."
-        ])
-
     if submitted:
         # 1. Red-flag emergency detection (evaluated regardless of model confidence)
         has_red_flags, red_flag_triggers = check_red_flags(selected)
@@ -224,6 +211,8 @@ def dashboard_page():
 
         # 3. Weak-input safety guard
         is_weak, weak_msg = check_weak_input(selected, confidence)
+        importance_data = []
+
         if is_weak:
             st.warning("⚠️ **Not enough information**")
             st.info(
@@ -258,9 +247,13 @@ def dashboard_page():
                 st.altair_chart(build_importance_chart(importance_data), use_container_width=True)
 
             st.divider()
-            st.subheader("Recommended Precautions")
-            for tip in get_precautions(final_pred):
+            st.subheader(f"Recommended Precautions ({final_pred})")
+            precautions_info = get_precautions_for_disease(final_pred)
+            for tip in precautions_info.get("precautions", []):
                 st.write(f"- {tip}")
+            when_care = precautions_info.get("when_to_seek_care")
+            if when_care:
+                st.warning(f"**When to seek immediate care:** {when_care}")
 
         with st.expander("Model probabilities (if available)"):
             for m_name, proba_dict in sample_res["individual_probas"].items():
@@ -268,6 +261,27 @@ def dashboard_page():
                 st.write({k: round(float(v), 3) for k, v in proba_dict.items()})
             st.write("**Ensemble (Soft-Voting)**")
             st.write({k: round(float(v), 3) for k, v in sample_res["all_probas"].items()})
+
+        # --- Downloadable PDF Clinical Report ---
+        st.divider()
+        report_precautions = get_precautions_for_disease(recorded_prediction)
+        pdf_bytes = generate_pdf_report(
+            patient_name=username if username else "Anonymous",
+            age=int(age),
+            symptoms=selected,
+            top_prediction=recorded_prediction,
+            confidence=confidence,
+            top3=top3,
+            contributing_symptoms=importance_data if not is_weak else [],
+            precautions_info=report_precautions,
+            red_flag_info=(has_red_flags, red_flag_triggers),
+        )
+        st.download_button(
+            label="📄 Download Assessment Report (PDF)",
+            data=pdf_bytes,
+            file_name=f"Clinical_Report_{username if username else 'Patient'}.pdf",
+            mime="application/pdf",
+        )
 
         st.info("*Note:* This tool is for educational purposes and not a medical diagnosis. Please consult a qualified clinician for medical advice.")
 
@@ -287,7 +301,7 @@ def dashboard_page():
 
 # -------- Detection History page --------
 def history_page():
-    theme.render_banner("Detection History", "View and download your past clinical assessment records.", "📋")
+    theme.render_banner("Detection History", "View past clinical assessment records and analytics.", "📋")
     user_id = st.session_state.get("user_id")
     if not user_id:
         st.warning("Please log in to view detection history.")
@@ -317,6 +331,45 @@ def history_page():
             file_name=f"assessment_history_{st.session_state.get('username', 'user')}.csv",
             mime="text/csv",
         )
+
+        # History Analytics Section
+        st.divider()
+        st.markdown("### 📊 History Analytics")
+        col_a, col_b = st.columns(2)
+
+        with col_a:
+            st.markdown("##### Most Frequent Predictions")
+            pred_counts = df["top_prediction"].value_counts().reset_index()
+            pred_counts.columns = ["Disease", "Count"]
+            chart_preds = alt.Chart(pred_counts).mark_bar(cornerRadiusEnd=4).encode(
+                y=alt.Y("Disease:N", sort="-x", title="Prediction"),
+                x=alt.X("Count:Q", title="Assessments", axis=alt.Axis(tickMinStep=1)),
+                color=alt.Color("Count:Q", scale=alt.Scale(scheme="blues"), legend=None),
+                tooltip=["Disease", "Count"]
+            ).properties(height=max(140, len(pred_counts) * 28))
+            st.altair_chart(chart_preds, use_container_width=True)
+
+        with col_b:
+            st.markdown("##### Most Frequently Reported Symptoms")
+            all_symptoms = []
+            for sym_str in df["symptoms"].dropna():
+                if sym_str and sym_str != "None":
+                    for s in str(sym_str).split(","):
+                        clean_s = s.strip()
+                        if clean_s:
+                            all_symptoms.append(clean_s.replace("_", " ").title())
+            if all_symptoms:
+                sym_counts = pd.Series(all_symptoms).value_counts().head(8).reset_index()
+                sym_counts.columns = ["Symptom", "Count"]
+                chart_syms = alt.Chart(sym_counts).mark_bar(cornerRadiusEnd=4).encode(
+                    y=alt.Y("Symptom:N", sort="-x", title="Symptom"),
+                    x=alt.X("Count:Q", title="Frequency", axis=alt.Axis(tickMinStep=1)),
+                    color=alt.Color("Count:Q", scale=alt.Scale(scheme="tealblues"), legend=None),
+                    tooltip=["Symptom", "Count"]
+                ).properties(height=max(140, len(sym_counts) * 28))
+                st.altair_chart(chart_syms, use_container_width=True)
+            else:
+                st.caption("No symptom records found.")
     else:
         st.info("No assessments recorded yet. Use the Dashboard to run disease predictions.")
 
