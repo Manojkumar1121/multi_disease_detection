@@ -1,3 +1,4 @@
+import json
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -12,21 +13,25 @@ from explain import (
     build_top3_chart,
     build_importance_chart,
 )
+from auth import (
+    register_user,
+    authenticate_user,
+    save_assessment,
+    get_user_assessments,
+)
 
 
 
 # Must be first Streamlit command!
 st.set_page_config(page_title="Disease Management Predictor", page_icon="🩺", layout="centered")
 
-# -------- Session state for login, theme, history, users, register page toggle --------
-if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
+# -------- Session state for login, theme, register page toggle --------
+if "user_id" not in st.session_state:
+    st.session_state["user_id"] = None
+if "username" not in st.session_state:
+    st.session_state["username"] = None
 if "theme" not in st.session_state:
     st.session_state["theme"] = "dark"
-if "history" not in st.session_state:
-    st.session_state["history"] = []
-if "users" not in st.session_state:
-    st.session_state["users"] = {"mamaa": "1234"}
 if "show_register" not in st.session_state:
     st.session_state["show_register"] = False
 theme.apply_custom_theme(st.session_state.get("theme", "dark"))
@@ -46,17 +51,15 @@ def settings_page():
 def register_page():
     st.title("Create Account")
     new_username = st.text_input("Choose a Username")
-    new_password = st.text_input("Choose a Password", type="password")
+    new_password = st.text_input("Choose a Password (minimum 8 characters)", type="password")
     if st.button("Register"):
-        if new_username in st.session_state["users"]:
-            st.error("Username already exists!")
-        elif not new_username or not new_password:
-            st.error("Username and password cannot be empty!")
-        else:
-            st.session_state["users"][new_username] = new_password
-            st.success("Account created successfully! You can now log in.")
+        success, msg = register_user(new_username, new_password)
+        if success:
+            st.success(msg)
             st.session_state["show_register"] = False
             st.rerun()
+        else:
+            st.error(msg)
     if st.button("Back to Login"):
         st.session_state["show_register"] = False
         st.rerun()
@@ -67,14 +70,15 @@ def login_page():
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
-        if st.session_state["users"].get(username) == password:
-            st.session_state["logged_in"] = True
+        user = authenticate_user(username, password)
+        if user is not None:
+            st.session_state["user_id"] = user["id"]
+            st.session_state["username"] = user["username"]
             st.session_state["show_register"] = False
             st.success("Login successful!")
             st.rerun()
         else:
-            st.error("Invalid username or password!")
-            st.info("Demo credentials: username = mamaa, password = 1234")
+            st.error("Invalid username or password.")
     st.info("Don't have an account?")
     if st.button("Create Account"):
         st.session_state["show_register"] = True
@@ -267,65 +271,89 @@ def dashboard_page():
 
         st.info("*Note:* This tool is for educational purposes and not a medical diagnosis. Please consult a qualified clinician for medical advice.")
 
-        # --- Save to history ---
-        st.session_state["history"].append({
-            "Patient": username if username else 'Anonymous',
-            "Age": int(age),
-            "Symptoms": ', '.join(selected),
-            "Pred_LogisticRegression": pred_log,
-            "Pred_RandomForest": pred_rf,
-            "Pred_SVC": pred_svc,
-            "FinalPrediction": recorded_prediction,
-            "Confidence": confidence,
-            "Top3": top3,
-        })
+        # --- Save to database for authenticated user ---
+        if st.session_state.get("user_id"):
+            save_assessment(
+                user_id=st.session_state["user_id"],
+                patient_name=username if username else "Anonymous",
+                age=int(age),
+                symptoms=", ".join(selected) if selected else "None",
+                top_prediction=recorded_prediction,
+                confidence=float(confidence),
+                top3_json=json.dumps(top3),
+            )
     else:
         st.caption("Fill the form and click Predict to see results.")
 
 # -------- Detection History page --------
 def history_page():
-    st.title("Detection History")
-    history = st.session_state["history"]
-    if history:
-        df = pd.DataFrame(history)
-        st.write(df)
-        if st.button("Export as CSV"):
-            df.to_csv("prediction_history.csv", index=False)
-            st.success("Exported as prediction_history.csv")
-    else:
-        st.info("No predictions yet.")
+    theme.render_banner("Detection History", "View and download your past clinical assessment records.", "📋")
+    user_id = st.session_state.get("user_id")
+    if not user_id:
+        st.warning("Please log in to view detection history.")
+        return
 
-# -------- Logout --------
-def logout_page():
-    st.title("Logout")
-    st.session_state["logged_in"] = False
-    st.success("You are logged out!")
+    records = get_user_assessments(user_id)
+    if records:
+        df = pd.DataFrame(records)
+        display_df = df[["id", "patient_name", "age", "symptoms", "top_prediction", "confidence", "created_at"]].copy()
+        display_df.rename(columns={
+            "id": "ID",
+            "patient_name": "Patient",
+            "age": "Age",
+            "symptoms": "Symptoms",
+            "top_prediction": "Predicted Disease",
+            "confidence": "Confidence",
+            "created_at": "Timestamp",
+        }, inplace=True)
+        display_df["Confidence"] = display_df["Confidence"].apply(lambda c: f"{float(c):.1%}")
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+        # Download button (replaces server-side CSV file write)
+        csv_bytes = display_df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="📥 Export History as CSV",
+            data=csv_bytes,
+            file_name=f"assessment_history_{st.session_state.get('username', 'user')}.csv",
+            mime="text/csv",
+        )
+    else:
+        st.info("No assessments recorded yet. Use the Dashboard to run disease predictions.")
+
+# -------- Logout Action --------
+def logout_action():
+    st.session_state["user_id"] = None
+    st.session_state["username"] = None
+    st.session_state["show_register"] = False
     st.rerun()
 
 # -------- Sidebar Navigation --------
 page_tabs = ["Dashboard", "Detection History", "Settings", "Logout"]
 
 # -------- Navigation Routing --------
-if not st.session_state.get("logged_in", False):
+if not st.session_state.get("user_id"):
     login_page()
 else:
     # Sidebar Navigation
     st.sidebar.title("🩺 Health Portal")
-    st.sidebar.caption("AI Decision Support System")
+    if st.session_state.get("username"):
+        st.sidebar.caption(f"Signed in as: **{st.session_state['username']}**")
+    else:
+        st.sidebar.caption("AI Decision Support System")
     st.sidebar.divider()
     
     selected_tab = st.sidebar.radio("Navigate", page_tabs)
 
     # Dictionary Dispatcher Pattern
-    pages = {
-        "Dashboard": dashboard_page,
-        "Detection History": history_page,
-        "Settings": settings_page,
-        "Logout": logout_page,
-    }
-
-    # Execute selected page function safely
-    if selected_tab in pages:
-        pages[selected_tab]()
+    if selected_tab == "Logout":
+        logout_action()
+    else:
+        pages = {
+            "Dashboard": dashboard_page,
+            "Detection History": history_page,
+            "Settings": settings_page,
+        }
+        if selected_tab in pages:
+            pages[selected_tab]()
 
         
