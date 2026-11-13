@@ -36,8 +36,6 @@ if "theme" not in st.session_state:
     st.session_state["theme"] = "dark"
 if "show_register" not in st.session_state:
     st.session_state["show_register"] = False
-theme.apply_custom_theme(st.session_state.get("theme", "dark"))
-# 2. Apply theme AFTER "theme" is initialized
 theme.apply_custom_theme(st.session_state["theme"])
 
 # -------- Settings page (theme selection) --------
