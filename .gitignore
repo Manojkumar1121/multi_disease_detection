@@ -27,3 +27,10 @@ desktop.ini
 
 # Streamlit config (if contains credentials)
 .streamlit/secrets.toml
+
+# SQLite Database & generated data
+data/*.db
+*.db
+prediction_history.csv
+.pytest_cache/
+

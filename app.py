@@ -1,15 +1,10 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import altair as alt
 import theme
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
-from statistics import mode
+from data import DEFAULT_DATASET_PATH
+from train import train_pipeline
 
 
 
@@ -81,71 +76,89 @@ def login_page():
     if st.session_state.get("show_register", False):
         register_page()
 
+# -------- Cached Model Loader --------
+@st.cache_resource
+def get_app_models(dataset_path: str = DEFAULT_DATASET_PATH):
+    return train_pipeline(dataset_path=dataset_path, force=False)
+
 # -------- Dashboard (prediction) page --------
 def dashboard_page():
     theme.render_banner(
-    "Disease Management Predictor", 
-    "Enter patient details, select symptoms, and get an ensemble prediction across 3 ML models.", 
-    "🩺")
+        "Disease Management Predictor", 
+        "Enter patient details, select symptoms, and get an ensemble prediction across 3 ML models.", 
+        "🩺"
+    )
     DEFAULT_PATH = "pro_disease_dataset.csv"
-    @st.cache_data
-    def load_data(path: str = DEFAULT_PATH):
-        try:
-            df = pd.read_csv(path)
-            return df
-        except Exception as e:
-            st.error(f"Failed to load dataset from {path}: {e}")
-            return None
     uploaded = st.file_uploader("Upload disease dataset (CSV) or use default bundled file", type=["csv"])
     if uploaded is not None:
         try:
-            df = pd.read_csv(uploaded)
+            import tempfile
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
+                tmp.write(uploaded.getvalue())
+                dataset_path = tmp.name
         except Exception as e:
             st.error(f"Could not read uploaded CSV: {e}")
             st.stop()
     else:
-        df = load_data(DEFAULT_PATH)
-    if df is None:
-        st.stop()
-    if "Disease" not in df.columns:
-        st.error("The dataset must have a 'Disease' column as the target.")
-        st.stop()
-    symptom_cols = [c for c in df.columns if c != "Disease"]
-    # Model training
-    X = df[symptom_cols]
-    y = df["Disease"]
-    def coerce_binary(x):
-        if x in [1, 0]:
-            return x
-        if isinstance(x, str):
-            s = x.strip().lower()
-            if s in ["1", "yes", "true", "y"]:
-                return 1
-            if s in ["0", "no", "false", "n"]:
-                return 0
-        try:
-            return int(float(x))
-        except Exception:
-            return 0
-    X = X.map(coerce_binary)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-    logreg = Pipeline([
-        ("scaler", StandardScaler(with_mean=False)),
-        ("clf", LogisticRegression(max_iter=200))
-    ])
-    rf = RandomForestClassifier(n_estimators=300, random_state=42)
-    svc = Pipeline([
-        ("scaler", StandardScaler(with_mean=False)),
-        ("clf", SVC(probability=True, kernel="rbf", C=1.0, gamma="scale", random_state=42))
-    ])
-    logreg.fit(X_train, y_train)
-    rf.fit(X_train, y_train)
-    svc.fit(X_train, y_train)
-    # Metrics
-    with st.expander("Model validation (on hold-out set)"):
-        for name, model in [("Logistic Regression", logreg), ("Random Forest", rf), ("SVC", svc)]:
-            pred = model.predict(X_test)
-            st.write(f"{name}** accuracy: {accuracy_score(y_test, pred):.3f}")
+        dataset_path = DEFAULT_PATH
+
+    models, ensemble, symptom_cols, classes, metrics = get_app_models(dataset_path)
+
+    # Metrics expander
+    with st.expander("Model validation & performance metrics"):
+        st.markdown("#### Model Performance Summary")
+        st.write("Validation scores on hold-out test set (stratified 20%) and 5-fold cross-validation:")
+        summary_rows = []
+        for m_name in ["Logistic Regression", "Random Forest", "SVC", "Ensemble"]:
+            m_info = metrics["models"][m_name]
+            st.write(f"- **{m_name}** accuracy: {m_info['holdout_accuracy']:.3f} (CV: {m_info['cv_accuracy_mean']:.3f} ± {m_info['cv_accuracy_std']:.3f})")
+            summary_rows.append({
+                "Model": m_name,
+                "Hold-out Accuracy": f"{m_info['holdout_accuracy']:.3f}",
+                "Hold-out Macro F1": f"{m_info['holdout_macro_f1']:.3f}",
+                "5-Fold CV Accuracy": f"{m_info['cv_accuracy_mean']:.3f} ± {m_info['cv_accuracy_std']:.3f}",
+                "5-Fold CV Macro F1": f"{m_info['cv_macro_f1_mean']:.3f} ± {m_info['cv_macro_f1_std']:.3f}",
+            })
+        st.dataframe(pd.DataFrame(summary_rows), use_container_width=True, hide_index=True)
+
+        st.markdown("#### Per-Disease Classification Metrics (Ensemble)")
+        ens_per_disease = metrics["models"]["Ensemble"]["per_disease"]
+        disease_rows = []
+        for d_name, d_scores in ens_per_disease.items():
+            disease_rows.append({
+                "Disease": d_name,
+                "Precision": f"{d_scores['precision']:.3f}",
+                "Recall": f"{d_scores['recall']:.3f}",
+                "F1-Score": f"{d_scores['f1']:.3f}",
+                "Support": d_scores["support"],
+            })
+        st.dataframe(pd.DataFrame(disease_rows), use_container_width=True, hide_index=True)
+
+        st.markdown("#### Confusion Matrix Heatmap (Ensemble)")
+        cm = metrics["models"]["Ensemble"]["confusion_matrix"]
+        cm_data = []
+        for i, actual in enumerate(classes):
+            for j, predicted in enumerate(classes):
+                cm_data.append({
+                    "Actual": actual,
+                    "Predicted": predicted,
+                    "Count": cm[i][j],
+                })
+        df_cm = pd.DataFrame(cm_data)
+        base = alt.Chart(df_cm).encode(
+            x=alt.X("Predicted:N", title="Predicted Disease", axis=alt.Axis(labelAngle=-45)),
+            y=alt.Y("Actual:N", title="Actual Disease", sort=list(classes)),
+        )
+        heatmap = base.mark_rect().encode(
+            color=alt.Color("Count:Q", scale=alt.Scale(scheme="blues"), legend=alt.Legend(title="Count")),
+            tooltip=["Actual", "Predicted", "Count"]
+        )
+        text = base.mark_text(baseline="middle").encode(
+            text="Count:Q",
+            color=alt.condition(alt.datum.Count > df_cm["Count"].max() / 2, alt.value("white"), alt.value("black"))
+        )
+        st.altair_chart((heatmap + text).properties(height=380), use_container_width=True)
+
     # Prediction form
     with st.form("patient_form"):
         col1, col2 = st.columns(2)
@@ -155,6 +168,7 @@ def dashboard_page():
             age = st.number_input("Age", min_value=0, max_value=120, value=25, step=1)
         selected = st.multiselect("Select your symptoms", options=symptom_cols, default=[])
         submitted = st.form_submit_button("Predict")
+
     PRECAUTIONS = {
         "Asthma": [
             "Use your prescribed inhaler as directed.",
@@ -169,38 +183,31 @@ def dashboard_page():
             "Rest, stay hydrated, and monitor your symptoms.",
             "Seek urgent care if symptoms worsen."
         ])
+
     if submitted:
         x_input = pd.DataFrame([[1 if c in selected else 0 for c in symptom_cols]], columns=symptom_cols)
-        pred_log = logreg.predict(x_input)[0]
-        pred_rf = rf.predict(x_input)[0]
-        pred_svc = svc.predict(x_input)[0]
-        votes = [pred_log, pred_rf, pred_svc]
-        try:
-            final_pred = mode(votes)
-        except Exception:
-            final_pred = pred_rf
+        sample_res = ensemble.predict_sample(x_input)
+        final_pred = sample_res["final_prediction"]
+        confidence = sample_res["confidence"]
+        pred_log = sample_res["individual_preds"]["Logistic Regression"]
+        pred_rf = sample_res["individual_preds"]["Random Forest"]
+        pred_svc = sample_res["individual_preds"]["SVC"]
+
         st.subheader("Results")
-        st.write(f"*Patient:* {username if username else 'Anonymous'} *Age:* {int(age)}")
+        st.write(f"*Patient:* {username if username else 'Anonymous'} | *Age:* {int(age)}")
         st.write(f"*Selected symptoms:* {', '.join(selected) if selected else 'None'}")
         cols = st.columns(3)
         cols[0].metric("Logistic Regression", str(pred_log))
         cols[1].metric("Random Forest", str(pred_rf))
         cols[2].metric("SVC", str(pred_svc))
-        st.success(f"🎯 *Final prediction (majority vote):* {final_pred}")
+        st.success(f"🎯 **Final prediction (soft-voting ensemble):** {final_pred} (Confidence: {confidence:.1%})")
+
         with st.expander("Model probabilities (if available)"):
-            def safe_proba(model, x):
-                if hasattr(model, "predict_proba"):
-                    p = model.predict_proba(x)
-                    classes = model.classes_
-                    return dict(zip(classes, p[0]))
-                return None
-            for name, model in [("Logistic Regression", logreg), ("Random Forest", rf), ("SVC", svc)]:
-                proba = safe_proba(model, x_input)
-                if proba is not None:
-                    st.write(f"{name}")
-                    st.write({k: round(float(v), 3) for k, v in proba.items()})
-                else:
-                    st.write(f"{name}: probabilities not available")
+            for m_name, proba_dict in sample_res["individual_probas"].items():
+                st.write(f"**{m_name}**")
+                st.write({k: round(float(v), 3) for k, v in proba_dict.items()})
+            st.write("**Ensemble (Soft-Voting)**")
+            st.write({k: round(float(v), 3) for k, v in sample_res["all_probas"].items()})
         st.divider()
         st.subheader("Recommended Precautions")
         for tip in get_precautions(final_pred):
