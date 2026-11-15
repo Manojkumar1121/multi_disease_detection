@@ -845,9 +845,7 @@ def render_hero_banner(
             <div class="hero-ai-chip">
                 <!-- AI Processor Chip Icon -->
                 <svg width="68" height="68" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Chip Outer Frame -->
                     <rect x="14" y="14" width="36" height="36" rx="8" stroke="#FFFFFF" stroke-width="2.5" fill="#0C4837"/>
-                    <!-- Corner Pins -->
                     <line x1="22" y1="8" x2="22" y2="14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
                     <line x1="32" y1="8" x2="32" y2="14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
                     <line x1="42" y1="8" x2="42" y2="14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
@@ -860,7 +858,6 @@ def render_hero_banner(
                     <line x1="50" y1="22" x2="56" y2="22" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
                     <line x1="50" y1="32" x2="56" y2="32" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
                     <line x1="50" y1="42" x2="56" y2="42" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <!-- AI Text -->
                     <text x="32" y="38" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="800" text-anchor="middle">AI</text>
                 </svg>
             </div>
@@ -888,113 +885,447 @@ def render_banner(title: str, subtitle: str, icon: str = "🩺"):
     )
 
 
-
-def render_category_pills():
-    """Renders the 4 clinical disease category pills across the top."""
-    st.markdown(
-        """
-        <div class="category-pills-grid">
-            <div class="category-pill pill-lung">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#19462D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 19.5c1.5-1.5 2-4 2-7.5 0-3.5-1.5-6-4-6-1.5 0-2.5 1-3 2.5"/>
-                    <path d="M7 19.5c-1.5-1.5-2-4-2-7.5 0-3.5 1.5-6 4-6 1.5 0 2.5 1 3 2.5"/>
-                    <path d="M12 6v14"/>
-                    <path d="M12 10c1.5-1 3-1.5 4.5-1.5"/>
-                    <path d="M12 10c-1.5-1-3-1.5-4.5-1.5"/>
-                </svg>
-                <span>Lung Disease</span>
-            </div>
-            <div class="category-pill pill-heart">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#793417" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-                    <path d="M3.22 12H9.5l1.5-3 2 6 1.5-3h6.28"/>
-                </svg>
-                <span>Heart Disease</span>
-            </div>
-            <div class="category-pill pill-brain">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A491A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04"/>
-                    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04"/>
-                </svg>
-                <span>Brain Disease</span>
-            </div>
-            <div class="category-pill pill-kidney">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#21485E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M7 6c-2.5 0-4 2-4 5.5s2 6.5 4 7.5 4 0 4-2.5-1-4-2-5c1.5-1 2-3 1-4.5S8.5 6 7 6Z"/>
-                    <path d="M17 6c2.5 0 4 2 4 5.5s-2 6.5-4 7.5-4 0-4-2.5 1-4 2-5c-1.5-1-2-3-1-4.5S15.5 6 17 6Z"/>
-                </svg>
-                <span>Kidney Disease</span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_hero_banner(
-    title: str = "Disease Management Predictor",
-    subtitle: str = "Enter patient details, select symptoms, and get an ensemble prediction across multiple ML models.",
-):
+def apply_auth_theme():
     """
-    Renders the rich emerald hero banner with glowing stethoscope and AI circuit chip.
+    Injects custom CSS specifically for the split-screen authentication
+    (Login and Registration) pages, matching the reference design:
+    - Left 50% dark emerald hero panel with DNA double helix & glowing branding.
+    - Right 50% clinical light (#F4F7F6) auth panel with centered login/register card.
+    - Hides Streamlit sidebar and collapses container padding to full-bleed.
+    - Custom styled input fields with username and lock left icons.
+    - Full-width coral-orange action button (#FF6F59 -> #FA573E).
+    - Outlined secondary switcher button (Create Account / Back to Login).
+    - Corner sparkle accent in bottom right.
     """
-    st.markdown(
-        f"""
-        <div class="hero-banner-card">
-            <div class="hero-banner-left">
-                <div class="hero-steth-icon">
-                    <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/>
-                        <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/>
-                        <circle cx="20" cy="10" r="2"/>
-                    </svg>
-                </div>
-                <div class="hero-banner-text">
-                    <h2>{title}</h2>
-                    <p>{subtitle}</p>
-                </div>
-            </div>
-            <div class="hero-ai-chip">
-                <!-- AI Processor Chip Icon -->
-                <svg width="68" height="68" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Chip Outer Frame -->
-                    <rect x="14" y="14" width="36" height="36" rx="8" stroke="#FFFFFF" stroke-width="2.5" fill="#0C4837"/>
-                    <!-- Corner Pins -->
-                    <line x1="22" y1="8" x2="22" y2="14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="32" y1="8" x2="32" y2="14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="42" y1="8" x2="42" y2="14" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="22" y1="50" x2="22" y2="56" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="32" y1="50" x2="32" y2="56" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="42" y1="50" x2="42" y2="56" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="8" y1="22" x2="14" y2="22" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="8" y1="32" x2="14" y2="32" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="8" y1="42" x2="14" y2="42" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="50" y1="22" x2="56" y2="22" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="50" y1="32" x2="56" y2="32" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <line x1="50" y1="42" x2="56" y2="42" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
-                    <!-- AI Text -->
-                    <text x="32" y="38" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="800" text-anchor="middle">AI</text>
-                </svg>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    css = """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
+    }
+
+    /* 1. Reset App Background & Hide Sidebar */
+    .stApp, [data-testid="stAppViewContainer"] {
+        background-color: #F4F7F6 !important;
+        overflow-x: hidden !important;
+    }
+
+    [data-testid="stHeader"] {
+        background: transparent !important;
+        z-index: 99 !important;
+    }
+
+    section[data-testid="stSidebar"],
+    [data-testid="collapsedControl"] {
+        display: none !important;
+        width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 2. Full-bleed Block Container */
+    .block-container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* 3. Two-Column 50/50 Split Viewport */
+    [data-testid="stHorizontalBlock"] {
+        min-height: 100vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 0 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: stretch !important;
+    }
+
+    /* Left Column: Dark Emerald Hero Panel */
+    [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {
+        min-height: 100vh !important;
+        width: 50% !important;
+        flex: 1 1 50% !important;
+        background: linear-gradient(155deg, #06231C 0%, #0A3D30 45%, #07221B 100%) !important;
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: stretch !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child > div {
+        height: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Right Column: Light Clinical Auth Form */
+    [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {
+        min-height: 100vh !important;
+        width: 50% !important;
+        flex: 1 1 50% !important;
+        background-color: #F4F7F6 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 40px 60px !important;
+        position: relative !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Constrain the form width in right column */
+    [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child > div,
+    [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child [data-testid="stVerticalBlock"] {
+        max-width: 430px !important;
+        width: 100% !important;
+        margin: auto !important;
+    }
+
+    /* 4. Remove default Streamlit Form borders & padding */
+    [data-testid="stHorizontalBlock"] [data-testid="stForm"] {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* 5. Auth Header */
+    .auth-title-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .auth-title-text {
+        color: #11252D !important;
+        font-size: 1.7rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+
+    /* 6. Form Field Labels */
+    .auth-field-label {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #152E27;
+        margin-bottom: 6px;
+        margin-top: 14px;
+    }
+
+    /* 7. Input Fields with Inner Icons */
+    [data-testid="stHorizontalBlock"] [data-testid="stTextInput"] {
+        margin-bottom: 8px !important;
+    }
+
+    [data-testid="stHorizontalBlock"] [data-testid="stTextInputRootElement"] {
+        background-color: #FFFFFF !important;
+        border: 1.5px solid #CCDCD5 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+        height: 48px !important;
+        position: relative !important;
+        transition: all 0.15s ease !important;
+    }
+
+    [data-testid="stHorizontalBlock"] [data-testid="stTextInputRootElement"]:focus-within {
+        border-color: #0E5C46 !important;
+        box-shadow: 0 0 0 3px rgba(14, 92, 70, 0.12) !important;
+    }
+
+    /* User Avatar icon inside Username field */
+    [data-testid="stHorizontalBlock"] [data-testid="stTextInput"]:has(input[type="text"]) [data-testid="stTextInputRootElement"]::before {
+        content: "";
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 18px;
+        height: 18px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2368857C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: contain;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    [data-testid="stHorizontalBlock"] [data-testid="stTextInput"]:has(input[type="text"]) input {
+        padding-left: 42px !important;
+        font-size: 0.95rem !important;
+        color: #122C24 !important;
+        height: 46px !important;
+    }
+
+    /* Padlock icon inside Password field */
+    [data-testid="stHorizontalBlock"] [data-testid="stTextInput"]:has(input[type="password"]) [data-testid="stTextInputRootElement"]::before {
+        content: "";
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 18px;
+        height: 18px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2368857C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='11' x='3' y='11' rx='2' ry='2'/%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: contain;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    [data-testid="stHorizontalBlock"] [data-testid="stTextInput"]:has(input[type="password"]) input {
+        padding-left: 42px !important;
+        font-size: 0.95rem !important;
+        color: #122C24 !important;
+        height: 46px !important;
+    }
+
+    /* 8. Full-width Coral Submit Button */
+    [data-testid="stHorizontalBlock"] [data-testid="stFormSubmitButton"] {
+        width: 100% !important;
+        margin-top: 14px !important;
+    }
+
+    [data-testid="stHorizontalBlock"] [data-testid="stFormSubmitButton"] > button {
+        background: linear-gradient(135deg, #FF6F59 0%, #FA573E 100%) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 12px !important;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        height: 48px !important;
+        width: 100% !important;
+        box-shadow: 0 4px 14px rgba(255, 111, 89, 0.4) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    [data-testid="stHorizontalBlock"] [data-testid="stFormSubmitButton"] > button:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 18px rgba(255, 111, 89, 0.5) !important;
+    }
+
+    /* 9. Forgot Password Link */
+    .auth-forgot-row {
+        text-align: right;
+        margin-top: 8px;
+        margin-bottom: 24px;
+    }
+
+    .auth-forgot-link {
+        color: #648278 !important;
+        font-size: 0.86rem !important;
+        font-weight: 500 !important;
+        text-decoration: none !important;
+        transition: color 0.15s ease;
+    }
+
+    .auth-forgot-link:hover {
+        color: #0E5C46 !important;
+        text-decoration: underline !important;
+    }
+
+    /* 10. Secondary Switcher (Don't have an account? [ Create Account ]) */
+    .auth-switch-label-wrap {
+        text-align: right;
+        color: #1E3832;
+        font-size: 0.92rem;
+        font-weight: 500;
+        line-height: 34px;
+    }
+
+    [data-testid="stHorizontalBlock"] .stButton {
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    [data-testid="stHorizontalBlock"] .stButton > button {
+        background: transparent !important;
+        border: 1.5px solid #486E63 !important;
+        color: #1E3832 !important;
+        border-radius: 8px !important;
+        padding: 4px 14px !important;
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        line-height: 1.2 !important;
+        transition: all 0.15s ease !important;
+    }
+
+    [data-testid="stHorizontalBlock"] .stButton > button:hover {
+        background: #E5ECE8 !important;
+        border-color: #385B51 !important;
+        color: #112520 !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    /* 11. Subtle Corner Sparkle */
+    .auth-corner-sparkle {
+        position: fixed !important;
+        bottom: 28px !important;
+        right: 36px !important;
+        pointer-events: none !important;
+        z-index: 10 !important;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 820px) {
+        [data-testid="stHorizontalBlock"] {
+            flex-direction: column !important;
+        }
+        [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {
+            width: 100% !important;
+            min-height: 360px !important;
+        }
+        [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {
+            width: 100% !important;
+            min-height: auto !important;
+            padding: 30px 20px !important;
+        }
+    }
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
 
 
-def render_banner(title: str, subtitle: str, icon: str = "🩺"):
-    """Compatibility wrapper for other pages (Detection History, Settings)."""
-    st.markdown(
-        f"""
-        <div class="hero-banner-card" style="margin-bottom: 22px;">
-            <div class="hero-banner-left">
-                <div style="font-size: 2.2rem; margin-right: 6px;">{icon}</div>
-                <div class="hero-banner-text">
-                    <h2>{title}</h2>
-                    <p>{subtitle}</p>
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+def render_auth_left_panel():
+    """
+    Renders the rich emerald left hero panel containing:
+    - Glowing cyan-mint shield/heart branding mark.
+    - White bold 'Health Portal' title.
+    - Mint subtitle 'Multi-Disease Detection System'.
+    - Translucent biomedical DNA double-helix spiral traversing the background.
+    - Floating frosted glass badges with glowing medical crosses (+).
+    - Floating translucent frosted glass hearts with ECG heartbeat waveform lines.
+    """
+    import math
+
+    steps = 22
+    start_x, start_y = 50.0, 840.0
+    end_x, end_y = 480.0, -40.0
+    dx = (end_x - start_x) / steps
+    dy = (end_y - start_y) / steps
+    axis_angle = math.atan2(end_y - start_y, end_x - start_x)
+    perp_angle = axis_angle + math.pi / 2
+    amplitude = 38.0
+
+    pts1 = []
+    pts2 = []
+    rungs = []
+
+    for i in range(steps + 1):
+        cx = start_x + dx * i
+        cy = start_y + dy * i
+        phase = i * 0.58
+        offset = math.sin(phase) * amplitude
+
+        x1 = cx + math.cos(perp_angle) * offset
+        y1 = cy + math.sin(perp_angle) * offset
+        x2 = cx - math.cos(perp_angle) * offset
+        y2 = cy - math.sin(perp_angle) * offset
+
+        pts1.append(f"{x1:.1f},{y1:.1f}")
+        pts2.append(f"{x2:.1f},{y2:.1f}")
+
+        alpha = 0.16 + 0.18 * abs(math.cos(phase))
+        rungs.append(
+            f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+            f'stroke="#2CD5A3" stroke-width="2" stroke-opacity="{alpha:.2f}"/>'
+        )
+        rungs.append(
+            f'<circle cx="{x1:.1f}" cy="{y1:.1f}" r="3.5" fill="#2EE5B8" fill-opacity="{alpha + 0.1:.2f}"/>'
+        )
+        rungs.append(
+            f'<circle cx="{x2:.1f}" cy="{y2:.1f}" r="3.5" fill="#2EE5B8" fill-opacity="{alpha + 0.1:.2f}"/>'
+        )
+
+    strand1 = "M " + " L ".join(pts1)
+    strand2 = "M " + " L ".join(pts2)
+    dna_rungs_html = "\n".join(rungs)
+
+    svg_content = f"""
+    <div style="width: 100%; height: 100%; min-height: 100vh; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+        <svg width="100%" height="100%" viewBox="0 0 540 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+            <defs>
+                <linearGradient id="authHeroBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#06231C"/>
+                    <stop offset="45%" stop-color="#0A3E31"/>
+                    <stop offset="100%" stop-color="#07221B"/>
+                </linearGradient>
+                <filter id="cyanGlow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="8" result="blur"/>
+                    <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                </filter>
+            </defs>
+
+            <!-- Background Gradient -->
+            <rect width="540" height="800" fill="url(#authHeroBg)"/>
+
+            <!-- Ambient Bokeh Particles -->
+            <circle cx="100" cy="150" r="3" fill="#2EE5B8" opacity="0.35"/>
+            <circle cx="480" cy="280" r="2.5" fill="#2EE5B8" opacity="0.3"/>
+            <circle cx="90" cy="520" r="2" fill="#2EE5B8" opacity="0.4"/>
+            <circle cx="440" cy="710" r="3.5" fill="#2EE5B8" opacity="0.3"/>
+            <circle cx="200" cy="760" r="2.5" fill="#2EE5B8" opacity="0.25"/>
+
+            <!-- Translucent DNA Double Helix Structure -->
+            <g id="dna-helix">
+                {dna_rungs_html}
+                <path d="{strand1}" fill="none" stroke="#2EE5B8" stroke-width="2.8" stroke-opacity="0.38"/>
+                <path d="{strand2}" fill="none" stroke="#2EE5B8" stroke-width="2.8" stroke-opacity="0.38"/>
+            </g>
+
+            <!-- Floating Card 1: Top Right Frosted Glass Medical Cross -->
+            <g transform="translate(370, 120)">
+                <rect width="64" height="64" rx="16" fill="#0E3D31" fill-opacity="0.65" stroke="#288C6F" stroke-width="1.5"/>
+                <path d="M32 18 V46 M18 32 H46" stroke="#2DE3B4" stroke-width="4.5" stroke-linecap="round"/>
+            </g>
+
+            <!-- Floating Card 2: Bottom Left Frosted Glass Medical Cross -->
+            <g transform="translate(70, 640)">
+                <rect width="52" height="52" rx="14" fill="#0E3D31" fill-opacity="0.65" stroke="#288C6F" stroke-width="1.5"/>
+                <path d="M26 15 V37 M15 26 H37" stroke="#2DE3B4" stroke-width="4" stroke-linecap="round"/>
+            </g>
+
+            <!-- Floating Heart 1: Upper Left Translucent Heart with Pulse -->
+            <g transform="translate(100, 230)">
+                <rect width="62" height="54" rx="14" fill="#FFFFFF" fill-opacity="0.06" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="1.2"/>
+                <path d="M31 16 C31 16 35 12 40 12 C45 12 48 16 48 20 C48 27 31 38 31 38 C31 38 14 27 14 20 C14 16 17 12 22 12 C27 12 31 16 31 16 Z" 
+                      fill="#FFFFFF" fill-opacity="0.08" stroke="#A7F3D0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M18 25 H25 L28 20 L32 29 L35 25 H44" fill="none" stroke="#2DE3B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+
+            <!-- Floating Heart 2: Lower Right Translucent Heart with Extended Pulse -->
+            <g transform="translate(320, 580)">
+                <rect width="90" height="76" rx="18" fill="#FFFFFF" fill-opacity="0.06" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="1.2"/>
+                <path d="M45 22 C45 22 51 16 58 16 C65 16 70 21 70 27 C70 37 45 52 45 52 C45 52 20 37 20 27 C20 21 25 16 32 16 C39 16 45 22 45 22 Z" 
+                      fill="#FFFFFF" fill-opacity="0.08" stroke="#A7F3D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6 34 H28 L34 26 L41 42 L47 34 H72 L77 28 L82 34 H96" fill="none" stroke="#2DE3B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+
+            <!-- Center Branding: Glowing Shield-Heart + Health Portal -->
+            <g transform="translate(270, 400)">
+                <!-- Glowing Emblem Icon -->
+                <g transform="translate(-32, -80)" filter="url(#cyanGlow)">
+                    <path d="M32 58 C32 58 58 42 58 24 C58 14 50 6 40 6 C34 6 32 10 32 10 C32 10 30 6 24 6 C14 6 6 14 6 24 C6 42 32 58 32 58 Z" 
+                          fill="#0C3E32" stroke="#2DE3B4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 28 H21 L26 19 L32 37 L38 28 H52" fill="none" stroke="#2DE3B4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+
+                <!-- Brand Typography -->
+                <text x="0" y="24" fill="#FFFFFF" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="34" font-weight="800" text-anchor="middle" letter-spacing="-0.5px">Health Portal</text>
+                <text x="0" y="56" fill="#8CD6BC" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="16" font-weight="500" text-anchor="middle" letter-spacing="0.2px">Multi-Disease Detection System</text>
+            </g>
+        </svg>
+    </div>
+    """
+    st.markdown(svg_content, unsafe_allow_html=True)
