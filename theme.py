@@ -1198,134 +1198,198 @@ def apply_auth_theme():
 
 
 def render_auth_left_panel():
+    """Renders the emerald hero left panel using st.components.v1.html
+    to bypass Streamlit HTML sanitisation which strips SVG elements.
     """
-    Renders the rich emerald left hero panel containing:
-    - Glowing cyan-mint shield/heart branding mark.
-    - White bold 'Health Portal' title.
-    - Mint subtitle 'Multi-Disease Detection System'.
-    - Translucent biomedical DNA double-helix spiral traversing the background.
-    - Floating frosted glass badges with glowing medical crosses (+).
-    - Floating translucent frosted glass hearts with ECG heartbeat waveform lines.
-    """
-    import math
+    import streamlit.components.v1 as components
+    _html = r"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; overflow:hidden;
+    background:linear-gradient(155deg,#06231C 0%,#0A3D30 45%,#07221B 100%); }
+  .panel { width:100%; height:100vh; position:relative; overflow:hidden; }
+  svg.hs { position:absolute; top:0; left:0; width:100%; height:100%; }
+</style>
+</head>
+<body>
+<div class="panel">
+<svg class="hs" viewBox="0 0 540 800" preserveAspectRatio="xMidYMid slice"
+     xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#06231C"/>
+      <stop offset="45%"  stop-color="#0A3E31"/>
+      <stop offset="100%" stop-color="#07221B"/>
+    </linearGradient>
+    <radialGradient id="hg" cx="50%" cy="38%" r="58%">
+      <stop offset="0%"   stop-color="#5ECFB0" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#1A6E5A" stop-opacity="0.25"/>
+    </radialGradient>
+    <radialGradient id="vig" cx="50%" cy="50%" r="70%">
+      <stop offset="0%"   stop-color="transparent"/>
+      <stop offset="100%" stop-color="#030F0B" stop-opacity="0.5"/>
+    </radialGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="sg" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
 
-    steps = 22
-    start_x, start_y = 50.0, 840.0
-    end_x, end_y = 480.0, -40.0
-    dx = (end_x - start_x) / steps
-    dy = (end_y - start_y) / steps
-    axis_angle = math.atan2(end_y - start_y, end_x - start_x)
-    perp_angle = axis_angle + math.pi / 2
-    amplitude = 38.0
+  <rect width="540" height="800" fill="url(#bg)"/>
+  <rect width="540" height="800" fill="url(#vig)"/>
 
-    pts1 = []
-    pts2 = []
-    rungs = []
+  <!-- Bokeh -->
+  <circle cx="85"  cy="130" r="3"   fill="#2EE5B8" opacity="0.4"/>
+  <circle cx="470" cy="260" r="2"   fill="#2EE5B8" opacity="0.3"/>
+  <circle cx="75"  cy="500" r="2.5" fill="#2EE5B8" opacity="0.35"/>
+  <circle cx="430" cy="700" r="3"   fill="#2EE5B8" opacity="0.3"/>
+  <circle cx="190" cy="750" r="2"   fill="#2EE5B8" opacity="0.25"/>
+  <circle cx="340" cy="80"  r="2.5" fill="#2EE5B8" opacity="0.28"/>
+  <circle cx="510" cy="460" r="2"   fill="#2EE5B8" opacity="0.22"/>
 
-    for i in range(steps + 1):
-        cx = start_x + dx * i
-        cy = start_y + dy * i
-        phase = i * 0.58
-        offset = math.sin(phase) * amplitude
+  <!-- DNA helix -->
+  <g opacity="0.9">
+    <line x1="50.0" y1="840.0" x2="50.0" y2="840.0" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.34"/>
+        <circle cx="50.0" cy="840.0" r="3.5" fill="#2EE5B8" fill-opacity="0.44"/>
+        <circle cx="50.0" cy="840.0" r="3.5" fill="#2EE5B8" fill-opacity="0.44"/>
+        <line x1="88.3" y1="809.1" x2="50.8" y2="790.9" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.31"/>
+        <circle cx="88.3" cy="809.1" r="3.5" fill="#2EE5B8" fill-opacity="0.41"/>
+        <circle cx="50.8" cy="790.9" r="3.5" fill="#2EE5B8" fill-opacity="0.41"/>
+        <line x1="120.4" y1="775.3" x2="57.8" y2="744.7" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.23"/>
+        <circle cx="120.4" cy="775.3" r="3.5" fill="#2EE5B8" fill-opacity="0.33"/>
+        <circle cx="57.8" cy="744.7" r="3.5" fill="#2EE5B8" fill-opacity="0.33"/>
+        <line x1="142.3" y1="736.4" x2="75.0" y2="703.6" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.19"/>
+        <circle cx="142.3" cy="736.4" r="3.5" fill="#2EE5B8" fill-opacity="0.29"/>
+        <circle cx="75.0" cy="703.6" r="3.5" fill="#2EE5B8" fill-opacity="0.29"/>
+        <line x1="153.2" y1="692.2" x2="103.2" y2="667.8" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.28"/>
+        <circle cx="153.2" cy="692.2" r="3.5" fill="#2EE5B8" fill-opacity="0.38"/>
+        <circle cx="103.2" cy="667.8" r="3.5" fill="#2EE5B8" fill-opacity="0.38"/>
+        <line x1="155.9" y1="644.0" x2="139.6" y2="636.0" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.33"/>
+        <circle cx="155.9" cy="644.0" r="3.5" fill="#2EE5B8" fill-opacity="0.43"/>
+        <circle cx="139.6" cy="636.0" r="3.5" fill="#2EE5B8" fill-opacity="0.43"/>
+        <line x1="155.9" y1="594.5" x2="178.6" y2="605.5" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.33"/>
+        <circle cx="155.9" cy="594.5" r="3.5" fill="#2EE5B8" fill-opacity="0.43"/>
+        <circle cx="178.6" cy="605.5" r="3.5" fill="#2EE5B8" fill-opacity="0.43"/>
+        <line x1="159.7" y1="546.7" x2="213.9" y2="573.3" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.27"/>
+        <circle cx="159.7" cy="546.7" r="3.5" fill="#2EE5B8" fill-opacity="0.37"/>
+        <circle cx="213.9" cy="573.3" r="3.5" fill="#2EE5B8" fill-opacity="0.37"/>
+        <line x1="172.3" y1="503.4" x2="240.4" y2="536.6" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.17"/>
+        <circle cx="172.3" cy="503.4" r="3.5" fill="#2EE5B8" fill-opacity="0.27"/>
+        <circle cx="240.4" cy="536.6" r="3.5" fill="#2EE5B8" fill-opacity="0.27"/>
+        <line x1="196.1" y1="465.4" x2="255.7" y2="494.6" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.25"/>
+        <circle cx="196.1" cy="465.4" r="3.5" fill="#2EE5B8" fill-opacity="0.35"/>
+        <circle cx="255.7" cy="494.6" r="3.5" fill="#2EE5B8" fill-opacity="0.35"/>
+        <line x1="229.6" y1="432.2" x2="261.3" y2="447.8" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.32"/>
+        <circle cx="229.6" cy="432.2" r="3.5" fill="#2EE5B8" fill-opacity="0.42"/>
+        <circle cx="261.3" cy="447.8" r="3.5" fill="#2EE5B8" fill-opacity="0.42"/>
+        <line x1="268.3" y1="401.6" x2="261.7" y2="398.4" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.34"/>
+        <circle cx="268.3" cy="401.6" r="3.5" fill="#2EE5B8" fill-opacity="0.44"/>
+        <circle cx="261.7" cy="398.4" r="3.5" fill="#2EE5B8" fill-opacity="0.44"/>
+        <line x1="305.9" y1="370.4" x2="263.2" y2="349.6" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.30"/>
+        <circle cx="305.9" cy="370.4" r="3.5" fill="#2EE5B8" fill-opacity="0.40"/>
+        <circle cx="263.2" cy="349.6" r="3.5" fill="#2EE5B8" fill-opacity="0.40"/>
+        <line x1="336.6" y1="335.9" x2="271.6" y2="304.1" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.22"/>
+        <circle cx="336.6" cy="335.9" r="3.5" fill="#2EE5B8" fill-opacity="0.32"/>
+        <circle cx="271.6" cy="304.1" r="3.5" fill="#2EE5B8" fill-opacity="0.32"/>
+        <line x1="356.6" y1="296.1" x2="290.7" y2="263.9" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.21"/>
+        <circle cx="356.6" cy="296.1" r="3.5" fill="#2EE5B8" fill-opacity="0.31"/>
+        <circle cx="290.7" cy="263.9" r="3.5" fill="#2EE5B8" fill-opacity="0.31"/>
+        <line x1="365.8" y1="251.1" x2="320.5" y2="228.9" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.29"/>
+        <circle cx="365.8" cy="251.1" r="3.5" fill="#2EE5B8" fill-opacity="0.39"/>
+        <circle cx="320.5" cy="228.9" r="3.5" fill="#2EE5B8" fill-opacity="0.39"/>
+        <line x1="367.7" y1="202.4" x2="357.8" y2="197.6" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.34"/>
+        <circle cx="367.7" cy="202.4" r="3.5" fill="#2EE5B8" fill-opacity="0.44"/>
+        <circle cx="357.8" cy="197.6" r="3.5" fill="#2EE5B8" fill-opacity="0.44"/>
+        <line x1="367.9" y1="153.0" x2="396.7" y2="167.0" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.32"/>
+        <circle cx="367.9" cy="153.0" r="3.5" fill="#2EE5B8" fill-opacity="0.42"/>
+        <circle cx="396.7" cy="167.0" r="3.5" fill="#2EE5B8" fill-opacity="0.42"/>
+        <line x1="372.8" y1="105.8" x2="430.8" y2="134.2" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.25"/>
+        <circle cx="372.8" cy="105.8" r="3.5" fill="#2EE5B8" fill-opacity="0.35"/>
+        <circle cx="430.8" cy="134.2" r="3.5" fill="#2EE5B8" fill-opacity="0.35"/>
+        <line x1="387.2" y1="63.3" x2="455.5" y2="96.7" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.16"/>
+        <circle cx="387.2" cy="63.3" r="3.5" fill="#2EE5B8" fill-opacity="0.26"/>
+        <circle cx="455.5" cy="96.7" r="3.5" fill="#2EE5B8" fill-opacity="0.26"/>
+        <line x1="412.8" y1="26.3" x2="469.0" y2="53.7" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.26"/>
+        <circle cx="412.8" cy="26.3" r="3.5" fill="#2EE5B8" fill-opacity="0.36"/>
+        <circle cx="469.0" cy="53.7" r="3.5" fill="#2EE5B8" fill-opacity="0.36"/>
+        <line x1="447.6" y1="-6.3" x2="473.3" y2="6.3" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.33"/>
+        <circle cx="447.6" cy="-6.3" r="3.5" fill="#2EE5B8" fill-opacity="0.43"/>
+        <circle cx="473.3" cy="6.3" r="3.5" fill="#2EE5B8" fill-opacity="0.43"/>
+        <line x1="486.6" y1="-36.8" x2="473.4" y2="-43.2" stroke="#2CD5A3" stroke-width="2" stroke-opacity="0.34"/>
+        <circle cx="486.6" cy="-36.8" r="3.5" fill="#2EE5B8" fill-opacity="0.44"/>
+        <circle cx="473.4" cy="-43.2" r="3.5" fill="#2EE5B8" fill-opacity="0.44"/>
+    <path d="M 50.0,840.0 L 88.3,809.1 L 120.4,775.3 L 142.3,736.4 L 153.2,692.2 L 155.9,644.0 L 155.9,594.5 L 159.7,546.7 L 172.3,503.4 L 196.1,465.4 L 229.6,432.2 L 268.3,401.6 L 305.9,370.4 L 336.6,335.9 L 356.6,296.1 L 365.8,251.1 L 367.7,202.4 L 367.9,153.0 L 372.8,105.8 L 387.2,63.3 L 412.8,26.3 L 447.6,-6.3 L 486.6,-36.8" fill="none" stroke="#2EE5B8" stroke-width="2.5" stroke-opacity="0.35"/>
+    <path d="M 50.0,840.0 L 50.8,790.9 L 57.8,744.7 L 75.0,703.6 L 103.2,667.8 L 139.6,636.0 L 178.6,605.5 L 213.9,573.3 L 240.4,536.6 L 255.7,494.6 L 261.3,447.8 L 261.7,398.4 L 263.2,349.6 L 271.6,304.1 L 290.7,263.9 L 320.5,228.9 L 357.8,197.6 L 396.7,167.0 L 430.8,134.2 L 455.5,96.7 L 469.0,53.7 L 473.3,6.3 L 473.4,-43.2" fill="none" stroke="#2EE5B8" stroke-width="2.5" stroke-opacity="0.35"/>
+  </g>
 
-        x1 = cx + math.cos(perp_angle) * offset
-        y1 = cy + math.sin(perp_angle) * offset
-        x2 = cx - math.cos(perp_angle) * offset
-        y2 = cy - math.sin(perp_angle) * offset
+  <!-- Cross badge top-right -->
+  <g transform="translate(368,115)">
+    <rect width="68" height="68" rx="18" fill="#0A3028" fill-opacity="0.75" stroke="#1E7A5E" stroke-width="1.5"/>
+    <path d="M34 20 V48 M20 34 H48" stroke="#2DE3B4" stroke-width="5" stroke-linecap="round" filter="url(#sg)"/>
+  </g>
 
-        pts1.append(f"{x1:.1f},{y1:.1f}")
-        pts2.append(f"{x2:.1f},{y2:.1f}")
+  <!-- Cross badge bottom-left -->
+  <g transform="translate(66,636)">
+    <rect width="56" height="56" rx="15" fill="#0A3028" fill-opacity="0.75" stroke="#1E7A5E" stroke-width="1.5"/>
+    <path d="M28 16 V40 M16 28 H40" stroke="#2DE3B4" stroke-width="4.5" stroke-linecap="round" filter="url(#sg)"/>
+  </g>
 
-        alpha = 0.16 + 0.18 * abs(math.cos(phase))
-        rungs.append(
-            f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
-            f'stroke="#2CD5A3" stroke-width="2" stroke-opacity="{alpha:.2f}"/>'
-        )
-        rungs.append(
-            f'<circle cx="{x1:.1f}" cy="{y1:.1f}" r="3.5" fill="#2EE5B8" fill-opacity="{alpha + 0.1:.2f}"/>'
-        )
-        rungs.append(
-            f'<circle cx="{x2:.1f}" cy="{y2:.1f}" r="3.5" fill="#2EE5B8" fill-opacity="{alpha + 0.1:.2f}"/>'
-        )
+  <!-- Heart badge upper-left -->
+  <g transform="translate(96,224)">
+    <rect width="68" height="58" rx="15" fill="#fff" fill-opacity="0.05"
+          stroke="#fff" stroke-opacity="0.14" stroke-width="1"/>
+    <path d="M34 42 C34 42 12 29 12 18 C12 11 17 7 24 7 C28 7 32 10 34 13
+             C36 10 40 7 44 7 C51 7 56 11 56 18 C56 29 34 42 34 42 Z"
+          fill="url(#hg)" stroke="#78D5B8" stroke-width="1.4"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M6 28 H17 L21 21 L26 33 L30 28 H46" fill="none"
+          stroke="#2DE3B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 
-    strand1 = "M " + " L ".join(pts1)
-    strand2 = "M " + " L ".join(pts2)
-    dna_rungs_html = "\n".join(rungs)
+  <!-- Heart badge lower-right -->
+  <g transform="translate(306,574)">
+    <rect width="100" height="82" rx="20" fill="#fff" fill-opacity="0.05"
+          stroke="#fff" stroke-opacity="0.14" stroke-width="1"/>
+    <path d="M50 60 C50 60 20 42 20 26 C20 16 27 10 36 10 C43 10 48 14 50 18
+             C52 14 57 10 64 10 C73 10 80 16 80 26 C80 42 50 60 50 60 Z"
+          fill="url(#hg)" stroke="#78D5B8" stroke-width="1.6"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M4 36 H24 L30 25 L38 46 L44 36 H76 L81 29 L86 36 H98" fill="none"
+          stroke="#2DE3B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 
-    svg_content = f"""
-    <div style="width: 100%; height: 100%; min-height: 100vh; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-        <svg width="100%" height="100%" viewBox="0 0 540 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-            <defs>
-                <linearGradient id="authHeroBg" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#06231C"/>
-                    <stop offset="45%" stop-color="#0A3E31"/>
-                    <stop offset="100%" stop-color="#07221B"/>
-                </linearGradient>
-                <filter id="cyanGlow" x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur stdDeviation="8" result="blur"/>
-                    <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-                </filter>
-            </defs>
+  <!-- Center branding -->
+  <g transform="translate(270,410)">
+    <g transform="translate(-34,-92)" filter="url(#glow)">
+      <path d="M34 64 C34 64 62 46 62 24 C62 12 52 4 42 4 C36 4 34 8 34 8
+               C34 8 32 4 26 4 C16 4 6 12 6 24 C6 46 34 64 34 64 Z"
+            fill="#0C4035" stroke="#2DE3B4" stroke-width="2.5"/>
+      <path d="M34 44 C34 44 18 34 18 25 C18 19 23 15 28 15 C31 15 33 17 34 19
+               C35 17 37 15 40 15 C45 15 50 19 50 25 C50 34 34 44 34 44 Z"
+            fill="none" stroke="#2DE3B4" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18 30 H24 L28 22 L34 38 L38 30 H50" fill="none"
+            stroke="#2DE3B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <text x="0" y="22" fill="#FFFFFF"
+          font-family="'Plus Jakarta Sans',system-ui,-apple-system,sans-serif"
+          font-size="36" font-weight="800" text-anchor="middle"
+          letter-spacing="-0.5">Health Portal</text>
+    <text x="0" y="52" fill="#8CD6BC"
+          font-family="'Plus Jakarta Sans',system-ui,-apple-system,sans-serif"
+          font-size="15.5" font-weight="400" text-anchor="middle"
+          letter-spacing="0.3">Multi-Disease Detection System</text>
+  </g>
+</svg>
+</div>
+</body>
+</html>"""
+    components.html(_html, height=700, scrolling=False)
 
-            <!-- Background Gradient -->
-            <rect width="540" height="800" fill="url(#authHeroBg)"/>
-
-            <!-- Ambient Bokeh Particles -->
-            <circle cx="100" cy="150" r="3" fill="#2EE5B8" opacity="0.35"/>
-            <circle cx="480" cy="280" r="2.5" fill="#2EE5B8" opacity="0.3"/>
-            <circle cx="90" cy="520" r="2" fill="#2EE5B8" opacity="0.4"/>
-            <circle cx="440" cy="710" r="3.5" fill="#2EE5B8" opacity="0.3"/>
-            <circle cx="200" cy="760" r="2.5" fill="#2EE5B8" opacity="0.25"/>
-
-            <!-- Translucent DNA Double Helix Structure -->
-            <g id="dna-helix">
-                {dna_rungs_html}
-                <path d="{strand1}" fill="none" stroke="#2EE5B8" stroke-width="2.8" stroke-opacity="0.38"/>
-                <path d="{strand2}" fill="none" stroke="#2EE5B8" stroke-width="2.8" stroke-opacity="0.38"/>
-            </g>
-
-            <!-- Floating Card 1: Top Right Frosted Glass Medical Cross -->
-            <g transform="translate(370, 120)">
-                <rect width="64" height="64" rx="16" fill="#0E3D31" fill-opacity="0.65" stroke="#288C6F" stroke-width="1.5"/>
-                <path d="M32 18 V46 M18 32 H46" stroke="#2DE3B4" stroke-width="4.5" stroke-linecap="round"/>
-            </g>
-
-            <!-- Floating Card 2: Bottom Left Frosted Glass Medical Cross -->
-            <g transform="translate(70, 640)">
-                <rect width="52" height="52" rx="14" fill="#0E3D31" fill-opacity="0.65" stroke="#288C6F" stroke-width="1.5"/>
-                <path d="M26 15 V37 M15 26 H37" stroke="#2DE3B4" stroke-width="4" stroke-linecap="round"/>
-            </g>
-
-            <!-- Floating Heart 1: Upper Left Translucent Heart with Pulse -->
-            <g transform="translate(100, 230)">
-                <rect width="62" height="54" rx="14" fill="#FFFFFF" fill-opacity="0.06" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="1.2"/>
-                <path d="M31 16 C31 16 35 12 40 12 C45 12 48 16 48 20 C48 27 31 38 31 38 C31 38 14 27 14 20 C14 16 17 12 22 12 C27 12 31 16 31 16 Z" 
-                      fill="#FFFFFF" fill-opacity="0.08" stroke="#A7F3D0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M18 25 H25 L28 20 L32 29 L35 25 H44" fill="none" stroke="#2DE3B4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-
-            <!-- Floating Heart 2: Lower Right Translucent Heart with Extended Pulse -->
-            <g transform="translate(320, 580)">
-                <rect width="90" height="76" rx="18" fill="#FFFFFF" fill-opacity="0.06" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="1.2"/>
-                <path d="M45 22 C45 22 51 16 58 16 C65 16 70 21 70 27 C70 37 45 52 45 52 C45 52 20 37 20 27 C20 21 25 16 32 16 C39 16 45 22 45 22 Z" 
-                      fill="#FFFFFF" fill-opacity="0.08" stroke="#A7F3D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M6 34 H28 L34 26 L41 42 L47 34 H72 L77 28 L82 34 H96" fill="none" stroke="#2DE3B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </g>
-
-            <!-- Center Branding: Glowing Shield-Heart + Health Portal -->
-            <g transform="translate(270, 400)">
-                <!-- Glowing Emblem Icon -->
-                <g transform="translate(-32, -80)" filter="url(#cyanGlow)">
-                    <path d="M32 58 C32 58 58 42 58 24 C58 14 50 6 40 6 C34 6 32 10 32 10 C32 10 30 6 24 6 C14 6 6 14 6 24 C6 42 32 58 32 58 Z" 
-                          fill="#0C3E32" stroke="#2DE3B4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 28 H21 L26 19 L32 37 L38 28 H52" fill="none" stroke="#2DE3B4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                </g>
-
-                <!-- Brand Typography -->
-                <text x="0" y="24" fill="#FFFFFF" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="34" font-weight="800" text-anchor="middle" letter-spacing="-0.5px">Health Portal</text>
-                <text x="0" y="56" fill="#8CD6BC" font-family="'Plus Jakarta Sans', system-ui, sans-serif" font-size="16" font-weight="500" text-anchor="middle" letter-spacing="0.2px">Multi-Disease Detection System</text>
-            </g>
-        </svg>
-    </div>
-    """
-    st.markdown(svg_content, unsafe_allow_html=True)
