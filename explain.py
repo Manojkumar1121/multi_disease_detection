@@ -164,7 +164,7 @@ def build_top3_chart(top3: List[Dict[str, Any]]) -> alt.Chart:
     bars = base.mark_bar(cornerRadiusEnd=6, height=26).encode(
         color=alt.Color(
             "probability:Q",
-            scale=alt.Scale(scheme="blues", domain=[0.0, 1.0]),
+            scale=alt.Scale(scheme="greens", domain=[0.0, 1.0]),
             legend=None,
         ),
         tooltip=[
@@ -216,7 +216,7 @@ def build_importance_chart(importance_data: List[Dict[str, Any]]) -> alt.Chart:
     bars = base.mark_bar(cornerRadiusEnd=5, height=22).encode(
         color=alt.condition(
             alt.datum.drop > 0,
-            alt.value("#2563EB"),  # Royal blue for positive drivers
+            alt.value("#0E5C46"),  # Deep clinical emerald for positive drivers
             alt.value("#94A3B8"),  # Slate gray for neutral/suppressive
         ),
         tooltip=[

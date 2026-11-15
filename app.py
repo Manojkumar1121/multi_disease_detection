@@ -33,7 +33,7 @@ if "user_id" not in st.session_state:
 if "username" not in st.session_state:
     st.session_state["username"] = None
 if "theme" not in st.session_state:
-    st.session_state["theme"] = "dark"
+    st.session_state["theme"] = "light"
 if "show_register" not in st.session_state:
     st.session_state["show_register"] = False
 theme.apply_custom_theme(st.session_state["theme"])
@@ -94,11 +94,21 @@ def get_app_models(dataset_path: str = DEFAULT_DATASET_PATH):
 
 # -------- Dashboard (prediction) page --------
 def dashboard_page():
-    theme.render_banner(
-        "Disease Management Predictor", 
-        "Enter patient details, select symptoms, and get an ensemble prediction across 3 ML models.", 
-        "🩺"
+    # 1. Main Header with Stethoscope and Botanical Leaves Artwork
+    theme.render_header(
+        "Multi-Disease Detection System",
+        "AI-powered diagnosis for multiple diseases from patient data and symptoms",
     )
+
+    # 2. Four Disease Category Pills (Lung, Heart, Brain, Kidney)
+    theme.render_category_pills()
+
+    # 3. Rich Emerald Hero Banner with AI Chip
+    theme.render_hero_banner(
+        "Disease Management Predictor",
+        "Enter patient details, select symptoms, and get an ensemble prediction across multiple ML models.",
+    )
+
     DEFAULT_PATH = "pro_disease_dataset.csv"
     uploaded = st.file_uploader("Upload disease dataset (CSV) or use default bundled file", type=["csv"])
     if uploaded is not None:
@@ -116,7 +126,7 @@ def dashboard_page():
     models, ensemble, symptom_cols, classes, metrics = get_app_models(dataset_path)
 
     # Metrics expander
-    with st.expander("Model validation & performance metrics"):
+    with st.expander("Model Validation & performance metrics"):
         st.markdown("#### Model Performance Summary")
         st.write("Validation scores on hold-out test set (stratified 20%) and 5-fold cross-validation:")
         summary_rows = []
@@ -161,7 +171,7 @@ def dashboard_page():
             y=alt.Y("Actual:N", title="Actual Disease", sort=list(classes)),
         )
         heatmap = base.mark_rect().encode(
-            color=alt.Color("Count:Q", scale=alt.Scale(scheme="blues"), legend=alt.Legend(title="Count")),
+            color=alt.Color("Count:Q", scale=alt.Scale(scheme="greens"), legend=alt.Legend(title="Count")),
             tooltip=["Actual", "Predicted", "Count"]
         )
         text = base.mark_text(baseline="middle").encode(
@@ -170,15 +180,25 @@ def dashboard_page():
         )
         st.altair_chart((heatmap + text).properties(height=380), use_container_width=True)
 
-    # Prediction form
+    # Prediction form matching Target UI
     with st.form("patient_form"):
         col1, col2 = st.columns(2)
         with col1:
-            username = st.text_input("Patient name", max_chars=50)
+            username = st.text_input("Patient name", placeholder="Enter patient name", max_chars=50)
         with col2:
             age = st.number_input("Age", min_value=0, max_value=120, value=25, step=1)
-        selected = st.multiselect("Select your symptoms", options=symptom_cols, default=[])
-        submitted = st.form_submit_button("Predict")
+        selected = st.multiselect("Select your symptoms", options=symptom_cols, default=[], placeholder="Choose options")
+        
+        btn_col, hint_col = st.columns([1, 4])
+        with btn_col:
+            submitted = st.form_submit_button("✦ Predict")
+        with hint_col:
+            st.markdown(
+                '<div style="padding-top: 10px; color: #55726B; font-size: 0.88rem; font-weight: 500;">'
+                '| &nbsp; ⓘ Fill the form and click Predict to see results.'
+                '</div>',
+                unsafe_allow_html=True
+            )
 
     if submitted:
         # 1. Red-flag emergency detection (evaluated regardless of model confidence)
@@ -294,8 +314,6 @@ def dashboard_page():
                 confidence=float(confidence),
                 top3_json=json.dumps(top3),
             )
-    else:
-        st.caption("Fill the form and click Predict to see results.")
 
 # -------- Detection History page --------
 def history_page():
@@ -342,7 +360,7 @@ def history_page():
             chart_preds = alt.Chart(pred_counts).mark_bar(cornerRadiusEnd=4).encode(
                 y=alt.Y("Disease:N", sort="-x", title="Prediction"),
                 x=alt.X("Count:Q", title="Assessments", axis=alt.Axis(tickMinStep=1)),
-                color=alt.Color("Count:Q", scale=alt.Scale(scheme="blues"), legend=None),
+                color=alt.Color("Count:Q", scale=alt.Scale(scheme="greens"), legend=None),
                 tooltip=["Disease", "Count"]
             ).properties(height=max(140, len(pred_counts) * 28))
             st.altair_chart(chart_preds, use_container_width=True)
@@ -378,22 +396,22 @@ def logout_action():
     st.session_state["show_register"] = False
     st.rerun()
 
-# -------- Sidebar Navigation --------
-page_tabs = ["Dashboard", "Detection History", "Settings", "Logout"]
-
-# -------- Navigation Routing --------
+# -------- Sidebar Navigation & Routing --------
 if not st.session_state.get("user_id"):
     login_page()
 else:
-    # Sidebar Navigation
-    st.sidebar.title("🩺 Health Portal")
-    if st.session_state.get("username"):
-        st.sidebar.caption(f"Signed in as: **{st.session_state['username']}**")
-    else:
-        st.sidebar.caption("AI Decision Support System")
-    st.sidebar.divider()
+    # Custom Brand Header & Profile Pill
+    theme.render_sidebar_header(username=st.session_state.get("username", "manoj"))
     
-    selected_tab = st.sidebar.radio("Navigate", page_tabs)
+    # Custom Styled Sidebar Navigation Menu
+    nav_map = {
+        "🏠  Dashboard": "Dashboard",
+        "🩺  Detection History": "Detection History",
+        "⚙️  Settings": "Settings",
+        "🚪  Logout": "Logout",
+    }
+    nav_choice = st.sidebar.radio("Navigate", list(nav_map.keys()), label_visibility="collapsed")
+    selected_tab = nav_map[nav_choice]
 
     # Dictionary Dispatcher Pattern
     if selected_tab == "Logout":
