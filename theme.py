@@ -886,37 +886,54 @@ def render_banner(title: str, subtitle: str, icon: str = "🩺"):
         unsafe_allow_html=True,
     )
 
-_AUTH_HERO_B64_CACHE = None
+_AUTH_HERO_DATA_URI_CACHE = None
+
+
+def get_auth_hero_data_uri() -> str:
+    """Loads and caches the base64 data URI of the cropped auth hero image."""
+    global _AUTH_HERO_DATA_URI_CACHE
+    if _AUTH_HERO_DATA_URI_CACHE is not None:
+        return _AUTH_HERO_DATA_URI_CACHE
+
+    png_path = os.path.join(os.path.dirname(__file__), "assets", "health_portal_auth_hero.png")
+    svg_path = os.path.join(os.path.dirname(__file__), "assets", "health_portal_auth_hero.svg")
+
+    if os.path.exists(png_path):
+        with open(png_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("utf-8")
+            _AUTH_HERO_DATA_URI_CACHE = f"data:image/png;base64,{b64}"
+    elif os.path.exists(svg_path):
+        with open(svg_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode("utf-8")
+            _AUTH_HERO_DATA_URI_CACHE = f"data:image/svg+xml;base64,{b64}"
+    else:
+        _AUTH_HERO_DATA_URI_CACHE = ""
+
+    return _AUTH_HERO_DATA_URI_CACHE
 
 
 def get_auth_hero_b64() -> str:
-    """Loads and caches the base64-encoded SVG hero illustration."""
-    global _AUTH_HERO_B64_CACHE
-    if _AUTH_HERO_B64_CACHE is not None:
-        return _AUTH_HERO_B64_CACHE
-
-    svg_path = os.path.join(os.path.dirname(__file__), "assets", "health_portal_auth_hero.svg")
-    if os.path.exists(svg_path):
-        with open(svg_path, "rb") as f:
-            _AUTH_HERO_B64_CACHE = base64.b64encode(f.read()).decode("utf-8")
-    else:
-        _AUTH_HERO_B64_CACHE = ""
-    return _AUTH_HERO_B64_CACHE
+    """Loads base64 payload for backwards-compatibility."""
+    uri = get_auth_hero_data_uri()
+    if "," in uri:
+        return uri.split(",", 1)[1]
+    return uri
 
 
 def apply_auth_theme():
     """
     Injects custom CSS specifically for the split-screen authentication
     (Login and Registration) pages, matching the reference design:
-    - Left 50% dark emerald hero panel with DNA double helix & glowing branding.
-    - Right 50% clinical light (#F4F7F6) auth panel with centered login/register card.
-    - Hides Streamlit sidebar and collapses container padding to full-bleed.
+    - Seamless 46/54 full-bleed split with ZERO gap between panels.
+    - Left 46% dark emerald hero panel with cropped DNA double helix & glowing branding.
+    - Right 54% clinical light (#F4F7F6) auth panel with centered login/register card.
+    - Completely hides Streamlit sidebar and removes all container padding.
     - Custom styled input fields with username and lock left icons.
     - Full-width coral-orange action button (#FF6F59 -> #FA573E).
     - Outlined secondary switcher button (Create Account / Back to Login).
     - Corner sparkle accent in bottom right.
     """
-    b64_str = get_auth_hero_b64()
+    data_uri = get_auth_hero_data_uri()
     css = f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
@@ -925,69 +942,139 @@ def apply_auth_theme():
         font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
     }}
 
-    /* 1. Reset App Background & Hide Sidebar */
-    .stApp, [data-testid="stAppViewContainer"] {{
-        background-color: #F4F7F6 !important;
+    /* =========================================================================
+       1. GLOBAL RESET & FULL-BLEED VIEWPORT (NO GAPS, NO MARGINS)
+       ========================================================================= */
+    html, body {{
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
         overflow-x: hidden !important;
     }}
 
-    [data-testid="stHeader"] {{
+    .stApp,
+    [data-testid="stAppViewContainer"],
+    section.main,
+    .main,
+    .block-container,
+    [data-testid="stAppViewContainer"] section.main .block-container,
+    .main .block-container {{
+        background-color: #F4F7F6 !important;
+        padding: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        overflow-x: hidden !important;
+    }}
+
+    /* Transparent top header */
+    [data-testid="stHeader"],
+    header[data-testid="stHeader"] {{
         background: transparent !important;
+        color: #11252D !important;
         z-index: 99 !important;
     }}
 
+    /* Completely hide sidebar on auth pages */
     section[data-testid="stSidebar"],
     [data-testid="collapsedControl"] {{
         display: none !important;
         width: 0 !important;
+        height: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
     }}
 
-    /* 2. Full-bleed Block Container */
-    .block-container {{
-        max-width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }}
-
-    /* 3. Two-Column 50/50 Split Viewport */
-    [data-testid="stHorizontalBlock"] {{
-        min-height: 100vh !important;
-        margin: 0 !important;
-        padding: 0 !important;
+    /* Remove gaps from vertical layout block */
+    .block-container > [data-testid="stVerticalBlock"],
+    .block-container > div > [data-testid="stVerticalBlock"] {{
         gap: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+    }}
+
+    /* =========================================================================
+       2. TOP-LEVEL 46/54 SPLIT-SCREEN LAYOUT (SEAMLESS 0 GAP)
+       ========================================================================= */
+    /* Target ONLY the root stHorizontalBlock split */
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"],
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"],
+    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"],
+    .block-container > div > [data-testid="stHorizontalBlock"] {{
         display: flex !important;
         flex-direction: row !important;
+        flex-wrap: nowrap !important;
         align-items: stretch !important;
-        width: 100% !important;
-    }}
-
-    /* Left Column: Dark Emerald Hero Panel */
-    [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {{
-        min-height: 100vh !important;
-        width: 50% !important;
-        flex: 1 1 50% !important;
-        background: #06231C url("data:image/svg+xml;base64,{b64_str}") no-repeat center center / cover !important;
-        position: relative !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: stretch !important;
-        align-items: stretch !important;
-        padding: 0 !important;
+        gap: 0px !important;
+        column-gap: 0px !important;
+        row-gap: 0px !important;
+        --column-gap: 0px !important;
+        --gap: 0px !important;
         margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        height: 100vh !important;
         overflow: hidden !important;
     }}
 
-    [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child > div,
-    [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child [data-testid="stVerticalBlock"],
-    [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child [data-testid="stElementContainer"],
-    [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child .stMarkdown {{
+    /* Reset columns under top-level stHorizontalBlock */
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"],
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] > [data-testid="column"],
+    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"],
+    .block-container > div > [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        min-height: 100vh !important;
+        height: 100vh !important;
+    }}
+
+    /* LEFT HERO PANEL (46% width, exact cropped visual, zero border) */
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
+    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
+    .block-container > div > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {{
+        flex: 0 0 46% !important;
+        width: 46% !important;
+        max-width: 46% !important;
+        min-width: 46% !important;
+        background: #06231C url("{data_uri}") no-repeat center center / cover !important;
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: stretch !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }}
+
+    /* Stretch all child wrappers inside left column */
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child > div,
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child > div,
+    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child > div,
+    .block-container > div > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child > div,
+    .block-container [data-testid="column"]:first-child [data-testid="stVerticalBlock"],
+    .block-container [data-testid="column"]:first-child [data-testid="stElementContainer"],
+    .block-container [data-testid="column"]:first-child .stMarkdown,
+    .block-container [data-testid="column"]:first-child [data-testid="stMarkdownContainer"] {{
         height: 100% !important;
         min-height: 100vh !important;
         width: 100% !important;
+        max-width: 100% !important;
         padding: 0 !important;
         margin: 0 !important;
+        border: none !important;
         display: flex !important;
         flex-direction: column !important;
         flex: 1 1 100% !important;
@@ -997,14 +1084,13 @@ def apply_auth_theme():
         width: 100% !important;
         height: 100% !important;
         min-height: 100vh !important;
-        position: relative !important;
-        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        background: transparent !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        overflow: hidden !important;
+        position: relative !important;
     }}
 
     .auth-hero-img {{
@@ -1012,16 +1098,22 @@ def apply_auth_theme():
         height: 100% !important;
         min-height: 100vh !important;
         object-fit: cover !important;
+        object-position: center center !important;
         display: block !important;
         pointer-events: none !important;
         user-select: none !important;
+        border: none !important;
     }}
 
-    /* Right Column: Light Clinical Auth Form */
-    [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {{
-        min-height: 100vh !important;
-        width: 50% !important;
-        flex: 1 1 50% !important;
+    /* RIGHT CLINICAL AUTH PANEL (54% width, light clinical, vertically centered) */
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
+    .block-container > div > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {{
+        flex: 0 0 54% !important;
+        width: 54% !important;
+        max-width: 54% !important;
+        min-width: 54% !important;
         background-color: #F4F7F6 !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1030,17 +1122,54 @@ def apply_auth_theme():
         padding: 40px 60px !important;
         position: relative !important;
         box-sizing: border-box !important;
+        overflow-y: auto !important;
+        margin: 0 !important;
+        border: none !important;
     }}
 
-    /* Constrain the form width in right column */
-    [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child > div,
-    [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child [data-testid="stVerticalBlock"] {{
-        max-width: 420px !important;
+    /* Constrain form card width inside right column */
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child > div,
+    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child > div,
+    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child > div,
+    .block-container > div > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child > div {{
+        max-width: 440px !important;
         width: 100% !important;
         margin: auto !important;
     }}
 
-    /* 4. Remove default Streamlit Form borders & padding */
+    /* =========================================================================
+       3. NESTED SWITCHER ROW RESET
+       ========================================================================= */
+    [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {{
+        min-height: auto !important;
+        height: auto !important;
+        width: 100% !important;
+        max-width: 440px !important;
+        margin: 10px auto 0 auto !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        column-gap: 10px !important;
+    }}
+
+    [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
+        min-height: auto !important;
+        height: auto !important;
+        width: auto !important;
+        flex: 1 1 auto !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+    }}
+
+    /* =========================================================================
+       4. FORM ELEMENTS STYLING
+       ========================================================================= */
     [data-testid="stHorizontalBlock"] [data-testid="stForm"] {{
         background: transparent !important;
         border: none !important;
@@ -1049,7 +1178,7 @@ def apply_auth_theme():
         margin-bottom: 0 !important;
     }}
 
-    /* 5. Auth Header */
+    /* Auth Header */
     .auth-title-container {{
         display: flex;
         align-items: center;
@@ -1065,7 +1194,7 @@ def apply_auth_theme():
         line-height: 1.2;
     }}
 
-    /* 6. Form Field Labels */
+    /* Form Field Labels */
     .auth-field-label {{
         font-size: 0.92rem;
         font-weight: 600;
@@ -1074,12 +1203,12 @@ def apply_auth_theme():
         margin-top: 14px;
     }}
 
-    /* 7. Input Fields with Inner Icons */
-    [data-testid="stHorizontalBlock"] [data-testid="stTextInput"] {{
+    /* Input Fields with Inner Icons */
+    [data-testid="column"]:last-child [data-testid="stTextInput"] {{
         margin-bottom: 8px !important;
     }}
 
-    [data-testid="stHorizontalBlock"] [data-testid="stTextInputRootElement"] {{
+    [data-testid="column"]:last-child [data-testid="stTextInputRootElement"] {{
         background-color: #FFFFFF !important;
         border: 1.5px solid #CCDCD5 !important;
         border-radius: 10px !important;
@@ -1089,13 +1218,13 @@ def apply_auth_theme():
         transition: all 0.15s ease !important;
     }}
 
-    [data-testid="stHorizontalBlock"] [data-testid="stTextInputRootElement"]:focus-within {{
+    [data-testid="column"]:last-child [data-testid="stTextInputRootElement"]:focus-within {{
         border-color: #0E5C46 !important;
         box-shadow: 0 0 0 3px rgba(14, 92, 70, 0.12) !important;
     }}
 
     /* User Avatar icon inside Username field */
-    [data-testid="stHorizontalBlock"] [data-testid="stTextInput"]:has(input[type="text"]) [data-testid="stTextInputRootElement"]::before {{
+    [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="text"]) [data-testid="stTextInputRootElement"]::before {{
         content: "";
         position: absolute;
         left: 14px;
@@ -1110,7 +1239,7 @@ def apply_auth_theme():
         pointer-events: none;
     }}
 
-    [data-testid="stHorizontalBlock"] [data-testid="stTextInput"]:has(input[type="text"]) input {{
+    [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="text"]) input {{
         padding-left: 42px !important;
         font-size: 0.95rem !important;
         color: #122C24 !important;
@@ -1118,7 +1247,7 @@ def apply_auth_theme():
     }}
 
     /* Padlock icon inside Password field */
-    [data-testid="stHorizontalBlock"] [data-testid="stTextInput"]:has(input[type="password"]) [data-testid="stTextInputRootElement"]::before {{
+    [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="password"]) [data-testid="stTextInputRootElement"]::before {{
         content: "";
         position: absolute;
         left: 14px;
@@ -1133,20 +1262,20 @@ def apply_auth_theme():
         pointer-events: none;
     }}
 
-    [data-testid="stHorizontalBlock"] [data-testid="stTextInput"]:has(input[type="password"]) input {{
+    [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="password"]) input {{
         padding-left: 42px !important;
         font-size: 0.95rem !important;
         color: #122C24 !important;
         height: 46px !important;
     }}
 
-    /* 8. Full-width Coral Submit Button */
-    [data-testid="stHorizontalBlock"] [data-testid="stFormSubmitButton"] {{
+    /* Full-width Coral Submit Button */
+    [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] {{
         width: 100% !important;
         margin-top: 14px !important;
     }}
 
-    [data-testid="stHorizontalBlock"] [data-testid="stFormSubmitButton"] > button {{
+    [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] > button {{
         background: linear-gradient(135deg, #FF6F59 0%, #FA573E 100%) !important;
         color: #FFFFFF !important;
         border: none !important;
@@ -1159,12 +1288,12 @@ def apply_auth_theme():
         transition: all 0.2s ease !important;
     }}
 
-    [data-testid="stHorizontalBlock"] [data-testid="stFormSubmitButton"] > button:hover {{
+    [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] > button:hover {{
         transform: translateY(-1px) !important;
         box-shadow: 0 6px 18px rgba(255, 111, 89, 0.5) !important;
     }}
 
-    /* 9. Forgot Password Link */
+    /* Forgot Password Link */
     .auth-forgot-row {{
         text-align: right;
         margin-top: 8px;
@@ -1184,7 +1313,7 @@ def apply_auth_theme():
         text-decoration: underline !important;
     }}
 
-    /* 10. Secondary Switcher (Don't have an account? [ Create Account ]) */
+    /* Secondary Switcher (Don't have an account? [ Create Account ]) */
     .auth-switch-label-wrap {{
         text-align: right;
         color: #1E3832;
@@ -1194,12 +1323,12 @@ def apply_auth_theme():
         white-space: nowrap;
     }}
 
-    [data-testid="stHorizontalBlock"] .stButton {{
+    [data-testid="column"]:last-child .stButton {{
         display: flex !important;
         align-items: center !important;
     }}
 
-    [data-testid="stHorizontalBlock"] .stButton > button {{
+    [data-testid="column"]:last-child .stButton > button {{
         background: transparent !important;
         border: 1.5px solid #486E63 !important;
         color: #1E3832 !important;
@@ -1214,7 +1343,7 @@ def apply_auth_theme():
         transition: all 0.15s ease !important;
     }}
 
-    [data-testid="stHorizontalBlock"] .stButton > button:hover {{
+    [data-testid="column"]:last-child .stButton > button:hover {{
         background: #E5ECE8 !important;
         border-color: #385B51 !important;
         color: #112520 !important;
@@ -1222,7 +1351,7 @@ def apply_auth_theme():
         box-shadow: none !important;
     }}
 
-    /* 11. Subtle Corner Sparkle */
+    /* Subtle Corner Sparkle */
     .auth-corner-sparkle {{
         position: fixed !important;
         bottom: 28px !important;
@@ -1233,17 +1362,22 @@ def apply_auth_theme():
 
     /* Mobile Responsive */
     @media (max-width: 820px) {{
-        [data-testid="stHorizontalBlock"] {{
+        .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"],
+        .block-container > div > [data-testid="stHorizontalBlock"] {{
             flex-direction: column !important;
         }}
-        [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {{
+        .block-container [data-testid="column"]:first-child {{
             width: 100% !important;
+            flex: 1 1 auto !important;
             min-height: 360px !important;
+            max-width: 100% !important;
         }}
-        [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {{
+        .block-container [data-testid="column"]:last-child {{
             width: 100% !important;
+            flex: 1 1 auto !important;
             min-height: auto !important;
             padding: 30px 20px !important;
+            max-width: 100% !important;
         }}
     }}
     </style>
@@ -1256,9 +1390,10 @@ def render_auth_left_panel():
     Renders the emerald hero left panel using an HTML img tag with base64 data URI
     and background-image to ensure 100% reliable full-bleed rendering without markdown bugs.
     """
-    b64_str = get_auth_hero_b64()
+    data_uri = get_auth_hero_data_uri()
     st.markdown(
-        f'<div class="auth-hero-container"><img src="data:image/svg+xml;base64,{b64_str}" class="auth-hero-img" alt="Health Portal Multi-Disease Detection System" /></div>',
+        f'<div class="auth-hero-container"><img src="{data_uri}" class="auth-hero-img" alt="Health Portal Multi-Disease Detection System" /></div>',
         unsafe_allow_html=True,
     )
+
 

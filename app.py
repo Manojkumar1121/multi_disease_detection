@@ -54,7 +54,7 @@ def settings_page():
 
 # -------- Register (create account) page --------
 def register_page():
-    col_left, col_right = st.columns([1, 1], gap="small")
+    col_left, col_right = st.columns([46, 54], gap=None)
 
     with col_left:
         theme.render_auth_left_panel()
@@ -116,7 +116,7 @@ def register_page():
 
 # -------- Login page --------
 def login_page():
-    col_left, col_right = st.columns([1, 1], gap="small")
+    col_left, col_right = st.columns([46, 54], gap=None)
 
     with col_left:
         theme.render_auth_left_panel()
