@@ -923,13 +923,12 @@ def get_auth_hero_b64() -> str:
 def apply_auth_theme():
     """
     Injects custom CSS specifically for the split-screen authentication
-    (Login and Registration) pages, matching the reference design:
-    - Seamless 46/54 full-bleed split with ZERO gap between panels.
+    (Login and Registration) pages, matching the reference design in Image 2:
     - Left 46% dark emerald hero panel with cropped DNA double helix & glowing branding.
-    - Right 54% clinical light (#F4F7F6) auth panel with centered login/register card.
+    - Right 54% clinical light (#F4F7F6) auth panel with centered 350px login/register card.
     - Completely hides Streamlit sidebar and removes all container padding.
     - Custom styled input fields with username and lock left icons.
-    - Full-width coral-orange action button (#FF6F59 -> #FA573E).
+    - Prominent orange gradient Login button (#FF791F to #FF5722) with rounded corners.
     - Outlined secondary switcher button (Create Account / Back to Login).
     - Corner sparkle accent in bottom right.
     """
@@ -951,6 +950,7 @@ def apply_auth_theme():
         width: 100vw !important;
         height: 100vh !important;
         overflow-x: hidden !important;
+        background-color: #F4F7F6 !important;
     }}
 
     .stApp,
@@ -1119,7 +1119,7 @@ def apply_auth_theme():
         flex-direction: column !important;
         justify-content: center !important;
         align-items: center !important;
-        padding: 40px 60px !important;
+        padding: 20px 40px !important;
         position: relative !important;
         box-sizing: border-box !important;
         overflow-y: auto !important;
@@ -1127,14 +1127,27 @@ def apply_auth_theme():
         border: none !important;
     }}
 
-    /* Constrain form card width inside right column */
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child > div,
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child > div,
-    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child > div,
-    .block-container > div > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child > div {{
-        max-width: 440px !important;
-        width: 100% !important;
+    /* Centered 350px card container inside right column */
+    .block-container [data-testid="column"]:last-child > [data-testid="stVerticalBlock"],
+    .block-container [data-testid="column"]:last-child > div > [data-testid="stVerticalBlock"],
+    .block-container [data-testid="column"]:last-child > div {{
+        width: 350px !important;
+        max-width: 350px !important;
+        min-width: 300px !important;
         margin: auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: stretch !important;
+        gap: 0 !important;
+    }}
+
+    .block-container [data-testid="column"]:last-child [data-testid="stElementContainer"],
+    .block-container [data-testid="column"]:last-child [data-testid="stForm"] {{
+        width: 350px !important;
+        max-width: 350px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
     }}
 
     /* =========================================================================
@@ -1143,16 +1156,16 @@ def apply_auth_theme():
     [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {{
         min-height: auto !important;
         height: auto !important;
-        width: 100% !important;
-        max-width: 440px !important;
-        margin: 10px auto 0 auto !important;
+        width: 350px !important;
+        max-width: 350px !important;
+        margin: 8px auto 0 auto !important;
         padding: 0 !important;
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 10px !important;
-        column-gap: 10px !important;
+        gap: 8px !important;
+        column-gap: 8px !important;
     }}
 
     [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
@@ -1176,36 +1189,42 @@ def apply_auth_theme():
         padding: 0 !important;
         box-shadow: none !important;
         margin-bottom: 0 !important;
+        width: 350px !important;
+        max-width: 350px !important;
     }}
 
-    /* Auth Header */
+    /* Auth Header (Lock Icon + Heading text) */
     .auth-title-container {{
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 24px;
+        gap: 10px;
+        margin-bottom: 22px;
+        width: 350px;
+        max-width: 350px;
     }}
 
     .auth-title-text {{
         color: #11252D !important;
-        font-size: 1.7rem !important;
-        font-weight: 800 !important;
+        font-size: 1.55rem !important;
+        font-weight: 700 !important;
         letter-spacing: -0.02em;
         line-height: 1.2;
     }}
 
     /* Form Field Labels */
     .auth-field-label {{
-        font-size: 0.92rem;
-        font-weight: 600;
-        color: #152E27;
-        margin-bottom: 6px;
-        margin-top: 14px;
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        color: #152E27 !important;
+        margin-bottom: 6px !important;
+        margin-top: 14px !important;
     }}
 
     /* Input Fields with Inner Icons */
     [data-testid="column"]:last-child [data-testid="stTextInput"] {{
-        margin-bottom: 8px !important;
+        margin-bottom: 6px !important;
+        width: 350px !important;
+        max-width: 350px !important;
     }}
 
     [data-testid="column"]:last-child [data-testid="stTextInputRootElement"] {{
@@ -1213,9 +1232,11 @@ def apply_auth_theme():
         border: 1.5px solid #CCDCD5 !important;
         border-radius: 10px !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
-        height: 48px !important;
+        height: 46px !important;
         position: relative !important;
         transition: all 0.15s ease !important;
+        width: 350px !important;
+        max-width: 350px !important;
     }}
 
     [data-testid="column"]:last-child [data-testid="stTextInputRootElement"]:focus-within {{
@@ -1241,9 +1262,9 @@ def apply_auth_theme():
 
     [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="text"]) input {{
         padding-left: 42px !important;
-        font-size: 0.95rem !important;
+        font-size: 0.92rem !important;
         color: #122C24 !important;
-        height: 46px !important;
+        height: 44px !important;
     }}
 
     /* Padlock icon inside Password field */
@@ -1264,48 +1285,51 @@ def apply_auth_theme():
 
     [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="password"]) input {{
         padding-left: 42px !important;
-        font-size: 0.95rem !important;
+        font-size: 0.92rem !important;
         color: #122C24 !important;
-        height: 46px !important;
+        height: 44px !important;
     }}
 
-    /* Full-width Coral Submit Button */
+    /* Full-width Warm Orange Gradient Submit Button */
     [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] {{
-        width: 100% !important;
-        margin-top: 14px !important;
+        width: 350px !important;
+        max-width: 350px !important;
+        margin-top: 18px !important;
     }}
 
     [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] > button {{
-        background: linear-gradient(135deg, #FF6F59 0%, #FA573E 100%) !important;
+        background: linear-gradient(180deg, #FF791F 0%, #FF5722 100%) !important;
         color: #FFFFFF !important;
         border: none !important;
         border-radius: 12px !important;
-        font-size: 1.05rem !important;
+        font-size: 1rem !important;
         font-weight: 700 !important;
-        height: 48px !important;
+        height: 46px !important;
         width: 100% !important;
-        box-shadow: 0 4px 14px rgba(255, 111, 89, 0.4) !important;
+        box-shadow: 0 4px 15px rgba(255, 121, 31, 0.4) !important;
         transition: all 0.2s ease !important;
     }}
 
     [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] > button:hover {{
         transform: translateY(-1px) !important;
-        box-shadow: 0 6px 18px rgba(255, 111, 89, 0.5) !important;
+        box-shadow: 0 6px 18px rgba(255, 121, 31, 0.5) !important;
     }}
 
-    /* Forgot Password Link */
+    /* Forgot Password Link (aligned right beneath the button) */
     .auth-forgot-row {{
-        text-align: right;
-        margin-top: 8px;
-        margin-bottom: 24px;
+        text-align: right !important;
+        margin-top: 8px !important;
+        margin-bottom: 22px !important;
+        width: 350px !important;
+        max-width: 350px !important;
     }}
 
     .auth-forgot-link {{
-        color: #648278 !important;
-        font-size: 0.86rem !important;
+        color: #6B827A !important;
+        font-size: 0.82rem !important;
         font-weight: 500 !important;
         text-decoration: none !important;
-        transition: color 0.15s ease;
+        transition: color 0.15s ease !important;
     }}
 
     .auth-forgot-link:hover {{
@@ -1315,37 +1339,39 @@ def apply_auth_theme():
 
     /* Secondary Switcher (Don't have an account? [ Create Account ]) */
     .auth-switch-label-wrap {{
-        text-align: right;
-        color: #1E3832;
-        font-size: 0.92rem;
-        font-weight: 500;
-        line-height: 34px;
-        white-space: nowrap;
+        text-align: right !important;
+        color: #1E3832 !important;
+        font-size: 0.88rem !important;
+        font-weight: 500 !important;
+        line-height: 34px !important;
+        white-space: nowrap !important;
     }}
 
     [data-testid="column"]:last-child .stButton {{
         display: flex !important;
         align-items: center !important;
+        justify-content: flex-start !important;
     }}
 
     [data-testid="column"]:last-child .stButton > button {{
         background: transparent !important;
-        border: 1.5px solid #486E63 !important;
+        border: 1.5px solid #3B5B51 !important;
         color: #1E3832 !important;
         border-radius: 8px !important;
         padding: 4px 14px !important;
-        font-size: 0.88rem !important;
+        font-size: 0.84rem !important;
         font-weight: 600 !important;
         box-shadow: none !important;
         height: 34px !important;
         min-height: 34px !important;
         line-height: 1.2 !important;
         transition: all 0.15s ease !important;
+        white-space: nowrap !important;
     }}
 
     [data-testid="column"]:last-child .stButton > button:hover {{
         background: #E5ECE8 !important;
-        border-color: #385B51 !important;
+        border-color: #2D4840 !important;
         color: #112520 !important;
         transform: none !important;
         box-shadow: none !important;
@@ -1369,7 +1395,7 @@ def apply_auth_theme():
         .block-container [data-testid="column"]:first-child {{
             width: 100% !important;
             flex: 1 1 auto !important;
-            min-height: 360px !important;
+            min-height: 320px !important;
             max-width: 100% !important;
         }}
         .block-container [data-testid="column"]:last-child {{
@@ -1377,6 +1403,20 @@ def apply_auth_theme():
             flex: 1 1 auto !important;
             min-height: auto !important;
             padding: 30px 20px !important;
+            max-width: 100% !important;
+        }}
+        .block-container [data-testid="column"]:last-child > [data-testid="stVerticalBlock"],
+        .block-container [data-testid="column"]:last-child > div > [data-testid="stVerticalBlock"],
+        .block-container [data-testid="column"]:last-child > div,
+        .block-container [data-testid="column"]:last-child [data-testid="stElementContainer"],
+        .block-container [data-testid="column"]:last-child [data-testid="stForm"],
+        .auth-title-container,
+        .auth-forgot-row,
+        [data-testid="column"]:last-child [data-testid="stTextInput"],
+        [data-testid="column"]:last-child [data-testid="stTextInputRootElement"],
+        [data-testid="column"]:last-child [data-testid="stFormSubmitButton"],
+        [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {{
+            width: 100% !important;
             max-width: 100% !important;
         }}
     }}
