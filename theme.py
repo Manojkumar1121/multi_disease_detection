@@ -542,8 +542,8 @@ def apply_custom_theme(current_theme="light"):
 
     [data-testid="stTextInputRootElement"]:focus-within,
     [data-testid="stNumberInputContainer"]:focus-within {
-        border-color: #0E5C46 !important;
-        box-shadow: 0 0 0 3px rgba(14, 92, 70, 0.12) !important;
+        border-color: #398D85 !important;
+        box-shadow: 0 0 0 3px rgba(57, 141, 133, 0.15) !important;
     }
 
     /* Multiselect box (Light Sage Green in Image 2) */
@@ -950,7 +950,7 @@ def apply_auth_theme():
         width: 100vw !important;
         height: 100vh !important;
         overflow-x: hidden !important;
-        background-color: #F4F7F6 !important;
+        background-color: #F1F5F5 !important;
     }}
 
     .stApp,
@@ -960,7 +960,7 @@ def apply_auth_theme():
     .block-container,
     [data-testid="stAppViewContainer"] section.main .block-container,
     .main .block-container {{
-        background-color: #F4F7F6 !important;
+        background-color: #F1F5F5 !important;
         padding: 0 !important;
         padding-top: 0 !important;
         padding-bottom: 0 !important;
@@ -1047,7 +1047,7 @@ def apply_auth_theme():
         width: 46% !important;
         max-width: 46% !important;
         min-width: 46% !important;
-        background: #06231C url("{data_uri}") no-repeat center center / cover !important;
+        background: linear-gradient(145deg, #063D2B 0%, #092F32 50%, #172D3B 100%) url("{data_uri}") no-repeat center center / cover !important;
         position: relative !important;
         display: flex !important;
         flex-direction: column !important;
@@ -1114,7 +1114,7 @@ def apply_auth_theme():
         width: 54% !important;
         max-width: 54% !important;
         min-width: 54% !important;
-        background-color: #F4F7F6 !important;
+        background-color: #F1F5F5 !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: center !important;
@@ -1204,7 +1204,7 @@ def apply_auth_theme():
     }}
 
     .auth-title-text {{
-        color: #11252D !important;
+        color: #142A35 !important;
         font-size: 1.55rem !important;
         font-weight: 700 !important;
         letter-spacing: -0.02em;
@@ -1215,7 +1215,7 @@ def apply_auth_theme():
     .auth-field-label {{
         font-size: 0.88rem !important;
         font-weight: 600 !important;
-        color: #152E27 !important;
+        color: #263B43 !important;
         margin-bottom: 6px !important;
         margin-top: 14px !important;
     }}
@@ -1229,7 +1229,7 @@ def apply_auth_theme():
 
     [data-testid="column"]:last-child [data-testid="stTextInputRootElement"] {{
         background-color: #FFFFFF !important;
-        border: 1.5px solid #CCDCD5 !important;
+        border: 1.5px solid #B8C8CB !important;
         border-radius: 10px !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
         height: 46px !important;
@@ -1253,7 +1253,7 @@ def apply_auth_theme():
         transform: translateY(-50%);
         width: 18px;
         height: 18px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2368857C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23398D85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-size: contain;
         z-index: 3;
@@ -1263,7 +1263,7 @@ def apply_auth_theme():
     [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="text"]) input {{
         padding-left: 42px !important;
         font-size: 0.92rem !important;
-        color: #122C24 !important;
+        color: #263B43 !important;
         height: 44px !important;
     }}
 
@@ -1276,7 +1276,7 @@ def apply_auth_theme():
         transform: translateY(-50%);
         width: 18px;
         height: 18px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2368857C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='11' x='3' y='11' rx='2' ry='2'/%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23398D85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='11' x='3' y='11' rx='2' ry='2'/%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-size: contain;
         z-index: 3;
@@ -1286,7 +1286,7 @@ def apply_auth_theme():
     [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="password"]) input {{
         padding-left: 42px !important;
         font-size: 0.92rem !important;
-        color: #122C24 !important;
+        color: #263B43 !important;
         height: 44px !important;
     }}
 
@@ -1298,7 +1298,7 @@ def apply_auth_theme():
     }}
 
     [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] > button {{
-        background: linear-gradient(180deg, #FF791F 0%, #FF5722 100%) !important;
+        background: linear-gradient(90deg, #FF791F 0%, #FF5722 100%) !important;
         color: #FFFFFF !important;
         border: none !important;
         border-radius: 12px !important;
@@ -1306,13 +1306,13 @@ def apply_auth_theme():
         font-weight: 700 !important;
         height: 46px !important;
         width: 100% !important;
-        box-shadow: 0 4px 15px rgba(255, 121, 31, 0.4) !important;
+        box-shadow: 0 6px 15px rgba(255, 87, 34, 0.25) !important;
         transition: all 0.2s ease !important;
     }}
 
     [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] > button:hover {{
         transform: translateY(-1px) !important;
-        box-shadow: 0 6px 18px rgba(255, 121, 31, 0.5) !important;
+        box-shadow: 0 8px 20px rgba(255, 87, 34, 0.35) !important;
     }}
 
     /* Forgot Password Link (aligned right beneath the button) */
@@ -1325,7 +1325,7 @@ def apply_auth_theme():
     }}
 
     .auth-forgot-link {{
-        color: #6B827A !important;
+        color: #183D45 !important;
         font-size: 0.82rem !important;
         font-weight: 500 !important;
         text-decoration: none !important;
@@ -1333,14 +1333,14 @@ def apply_auth_theme():
     }}
 
     .auth-forgot-link:hover {{
-        color: #0E5C46 !important;
+        color: #183D45 !important;
         text-decoration: underline !important;
     }}
 
     /* Secondary Switcher (Don't have an account? [ Create Account ]) */
     .auth-switch-label-wrap {{
         text-align: right !important;
-        color: #1E3832 !important;
+        color: #183D45 !important;
         font-size: 0.88rem !important;
         font-weight: 500 !important;
         line-height: 34px !important;
@@ -1355,8 +1355,8 @@ def apply_auth_theme():
 
     [data-testid="column"]:last-child .stButton > button {{
         background: transparent !important;
-        border: 1.5px solid #3B5B51 !important;
-        color: #1E3832 !important;
+        border: 1.5px solid #577B7A !important;
+        color: #183D45 !important;
         border-radius: 8px !important;
         padding: 4px 14px !important;
         font-size: 0.84rem !important;
