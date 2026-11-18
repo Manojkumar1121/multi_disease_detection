@@ -54,27 +54,16 @@ def settings_page():
 
 # -------- Register (create account) page --------
 def register_page():
-    col_left, col_right = st.columns([46, 54], gap=None)
+    col_left, col_right = st.columns([520, 680], gap="large")
 
     with col_left:
-        theme.render_auth_left_panel()
+        # Top Brand Badge
+        theme.render_auth_brand_badge()
 
-    with col_right:
-        # Title with Lock Icon matching reference design
-        st.markdown(
-            """
-            <div class="auth-title-container">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#11252D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                <span class="auth-title-text">Create Account</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
+        # Create Account Form Card
         with st.form("register_form", border=False):
+            theme.render_auth_card_header("Create Account")
+
             st.markdown('<div class="auth-field-label">Username</div>', unsafe_allow_html=True)
             new_username = st.text_input("Username", placeholder="Enter your username", label_visibility="collapsed")
 
@@ -91,61 +80,43 @@ def register_page():
                 else:
                     st.error(msg)
 
-        st.markdown('<div style="height: 18px;"></div>', unsafe_allow_html=True)
-
-        # Switcher: Already have an account? [ Back to Login ]
-        col_lbl, col_btn = st.columns([1.1, 1], gap="small")
+        # Switcher Card: Already have an account? [ Back to Login ]
+        col_lbl, col_btn = st.columns([1.2, 1], gap="small", vertical_alignment="center")
         with col_lbl:
-            st.markdown('<div class="auth-switch-label-wrap">Already have an account?</div>', unsafe_allow_html=True)
+            st.markdown('<div class="auth-switch-label">Already have an account?</div>', unsafe_allow_html=True)
         with col_btn:
             if st.button("Back to Login", key="btn_to_login"):
                 st.session_state["show_register"] = False
                 st.rerun()
 
-        # Corner sparkle
-        st.markdown(
-            """
-            <div class="auth-corner-sparkle">
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z" fill="#C5DCD1" opacity="0.45"/>
-                </svg>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    with col_right:
+        theme.render_auth_hero_panel()
+
 
 # -------- Login page --------
 def login_page():
-    col_left, col_right = st.columns([46, 54], gap=None)
+    col_left, col_right = st.columns([520, 680], gap="large")
 
     with col_left:
-        theme.render_auth_left_panel()
+        # Top Brand Badge
+        theme.render_auth_brand_badge()
 
-    with col_right:
-        # Title with Solid Lock Icon matching reference design
-        st.markdown(
-            """
-            <div class="auth-title-container">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="4" y="10" width="16" height="12" rx="3" fill="#11252D"/>
-                    <path d="M7 10V6.5C7 3.73858 9.23858 1.5 12 1.5C14.7614 1.5 17 3.73858 17 6.5V10" stroke="#11252D" stroke-width="3" stroke-linecap="round"/>
-                    <circle cx="12" cy="15" r="1.5" fill="#FFFFFF"/>
-                    <path d="M12 16.5V18.5" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-                <span class="auth-title-text">Login to Health Portal</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
+        # Login Form Card
         with st.form("login_form", border=False):
+            theme.render_auth_card_header("Login to Health Portal")
+
             st.markdown('<div class="auth-field-label">Username</div>', unsafe_allow_html=True)
             username = st.text_input("Username", placeholder="Enter your username", label_visibility="collapsed")
 
             st.markdown('<div class="auth-field-label">Password</div>', unsafe_allow_html=True)
             password = st.text_input("Password", type="password", placeholder="••••••••", label_visibility="collapsed")
 
-            submit = st.form_submit_button("Login", use_container_width=True)
+            col_sub, col_forgot = st.columns([1.5, 1], gap="small", vertical_alignment="center")
+            with col_sub:
+                submit = st.form_submit_button("Login", use_container_width=True)
+            with col_forgot:
+                st.markdown('<div class="auth-forgot-link-wrap"><a href="#forgot" class="auth-forgot-link">Forgot password?</a></div>', unsafe_allow_html=True)
+
             if submit:
                 user = authenticate_user(username, password)
                 if user is not None:
@@ -157,35 +128,17 @@ def login_page():
                 else:
                     st.error("Invalid username or password.")
 
-        st.markdown(
-            """
-            <div class="auth-forgot-row">
-                <a href="#" class="auth-forgot-link">Forgot password?</a>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        # Switcher: Don't have an account? [ Create Account ]
-        col_lbl, col_btn = st.columns([1.1, 1], gap="small")
+        # Switcher Card: Don't have an account? [ Create Account ]
+        col_lbl, col_btn = st.columns([1.2, 1], gap="small", vertical_alignment="center")
         with col_lbl:
-            st.markdown('<div class="auth-switch-label-wrap">Don\'t have an account?</div>', unsafe_allow_html=True)
+            st.markdown('<div class="auth-switch-label">Don\'t have an account?</div>', unsafe_allow_html=True)
         with col_btn:
             if st.button("Create Account", key="btn_to_reg"):
                 st.session_state["show_register"] = True
                 st.rerun()
 
-        # Corner sparkle
-        st.markdown(
-            """
-            <div class="auth-corner-sparkle">
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z" fill="#C5DCD1" opacity="0.45"/>
-                </svg>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    with col_right:
+        theme.render_auth_hero_panel()
 
 # -------- Cached Model Loader --------
 @st.cache_resource

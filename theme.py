@@ -923,517 +923,713 @@ def get_auth_hero_b64() -> str:
 def apply_auth_theme():
     """
     Injects custom CSS specifically for the split-screen authentication
-    (Login and Registration) pages, matching the reference design in Image 2:
-    - Left 46% dark emerald hero panel with cropped DNA double helix & glowing branding.
-    - Right 54% clinical light (#F4F7F6) auth panel with centered 350px login/register card.
-    - Completely hides Streamlit sidebar and removes all container padding.
-    - Custom styled input fields with username and lock left icons.
-    - Prominent orange gradient Login button (#FF791F to #FF5722) with rounded corners.
-    - Outlined secondary switcher button (Create Account / Back to Login).
-    - Corner sparkle accent in bottom right.
+    (Login and Registration) pages, matching the Clinical.dc.html reference:
+    - Overall background: soft clinical lavender #F4F0FB.
+    - Font family: 'Manrope', system-ui, -apple-system, sans-serif.
+    - Left 520px column:
+        1. Top badge: deep violet #2A1860 with gold EKG heartbeat icon.
+        2. Middle card: white card with 6px solid #6D28D9 top border, 24px radius,
+           box shadow 0 16px 48px rgba(11,31,58,0.1), padding 40px, custom inputs
+           with username & lock icons, purple pill submit button (#6D28D9),
+           and forgot password link (#5B21B6).
+        3. Bottom card: white card with 16px radius, shadow 0 6px 20px rgba(11,31,58,0.07),
+           housing 'Don't have an account?' and outlined pill 'Create Account' button.
+    - Right column: clinical purple hero banner (gradient #2A1860 to #6B2FB3, 28px radius),
+      floating DNA helix SVG, 50px bold headline 'AI-powered mediligence', subtitle,
+      3 glassmorphic feature badges, and bottom sweeping pink EKG waveform.
     """
-    data_uri = get_auth_hero_data_uri()
-    css = f"""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
-
-    html, body, [class*="css"] {{
-        font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
-    }}
+    css = """<style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
     /* =========================================================================
-       1. GLOBAL RESET & FULL-BLEED VIEWPORT (NO GAPS, NO MARGINS)
+       1. GLOBAL RESET & AUTH CANVAS BACKGROUND (#F4F0FB)
        ========================================================================= */
-    html, body {{
-        margin: 0 !important;
-        padding: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        overflow-x: hidden !important;
-        background-color: #F1F5F5 !important;
-    }}
+    html, body, [class*="css"], .stApp {
+        font-family: 'Manrope', system-ui, -apple-system, sans-serif !important;
+        background-color: #F4F0FB !important;
+        color: #14233B !important;
+    }
 
     .stApp,
     [data-testid="stAppViewContainer"],
     section.main,
     .main,
-    .block-container,
     [data-testid="stAppViewContainer"] section.main .block-container,
-    .main .block-container {{
-        background-color: #F1F5F5 !important;
-        padding: 0 !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
-        width: 100% !important;
-        min-height: 100vh !important;
-        overflow-x: hidden !important;
-    }}
+    .main .block-container {
+        background-color: #F4F0FB !important;
+        color: #14233B !important;
+    }
 
-    /* Transparent top header */
     [data-testid="stHeader"],
-    header[data-testid="stHeader"] {{
+    header[data-testid="stHeader"] {
         background: transparent !important;
-        color: #11252D !important;
-        z-index: 99 !important;
-    }}
+        color: #14233B !important;
+        z-index: 1 !important;
+    }
 
-    /* Completely hide sidebar on auth pages */
+    /* Completely hide sidebar and collapse button on auth page */
     section[data-testid="stSidebar"],
-    [data-testid="collapsedControl"] {{
+    [data-testid="collapsedControl"] {
         display: none !important;
         width: 0 !important;
         height: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
-    }}
+    }
 
-    /* Remove gaps from vertical layout block */
+    /* Auth canvas container: 1280px max-width matching reference mockup */
+    .block-container {
+        max-width: 1280px !important;
+        padding: 32px 24px !important;
+        margin: 0 auto !important;
+        min-height: 100vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Remove default vertical block padding/gap */
     .block-container > [data-testid="stVerticalBlock"],
-    .block-container > div > [data-testid="stVerticalBlock"] {{
+    .block-container > div > [data-testid="stVerticalBlock"] {
         gap: 0 !important;
         padding: 0 !important;
         margin: 0 !important;
         width: 100% !important;
-        min-height: 100vh !important;
-    }}
+    }
 
     /* =========================================================================
-       2. TOP-LEVEL 46/54 SPLIT-SCREEN LAYOUT (SEAMLESS 0 GAP)
+       2. TOP-LEVEL 2-COLUMN SPLIT (520px Left Auth Panel / Flex 1 Right Hero)
        ========================================================================= */
-    /* Target ONLY the root stHorizontalBlock split */
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"],
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"],
-    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"],
-    .block-container > div > [data-testid="stHorizontalBlock"] {{
+    /* Container of columns */
+    div:has(> [data-testid="stColumn"]:nth-child(2)),
+    div:has(> [data-testid="column"]:nth-child(2)) {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
         align-items: stretch !important;
-        gap: 0px !important;
-        column-gap: 0px !important;
-        row-gap: 0px !important;
-        --column-gap: 0px !important;
-        --gap: 0px !important;
-        margin: 0 !important;
-        padding: 0 !important;
+        box-sizing: border-box !important;
+        gap: 32px !important;
+        column-gap: 32px !important;
+        min-height: 720px !important;
         width: 100% !important;
-        min-height: 100vh !important;
-        height: 100vh !important;
-        overflow: hidden !important;
-    }}
+    }
 
-    /* Reset columns under top-level stHorizontalBlock */
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"],
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] > [data-testid="column"],
-    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"],
-    .block-container > div > [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
+    /* LEFT COLUMN: 520px fixed flex */
+    div:has(> [data-testid="stColumn"]:nth-child(2)) > [data-testid="stColumn"]:first-child,
+    div:has(> [data-testid="column"]:nth-child(2)) > [data-testid="column"]:first-child {
+        flex: 0 0 520px !important;
+        width: 520px !important;
+        max-width: 520px !important;
+        min-width: 320px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
         padding: 0 !important;
         margin: 0 !important;
+        background: transparent !important;
         border: none !important;
-        min-height: 100vh !important;
-        height: 100vh !important;
-    }}
+        box-sizing: border-box !important;
+    }
 
-    /* LEFT HERO PANEL (46% width, exact cropped visual, zero border) */
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
-    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child,
-    .block-container > div > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child {{
-        flex: 0 0 46% !important;
-        width: 46% !important;
-        max-width: 46% !important;
-        min-width: 46% !important;
-        background: linear-gradient(145deg, #063D2B 0%, #092F32 50%, #172D3B 100%) url("{data_uri}") no-repeat center center / cover !important;
-        position: relative !important;
+    /* Left column inner vertical block */
+    div:has(> [data-testid="stColumn"]:nth-child(2)) > [data-testid="stColumn"]:first-child > div,
+    div:has(> [data-testid="column"]:nth-child(2)) > [data-testid="column"]:first-child > div {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        gap: 16px !important;
+    }
+
+    /* RIGHT COLUMN: flex 1 1 0 (Hero Banner) */
+    div:has(> [data-testid="stColumn"]:nth-child(2)) > [data-testid="stColumn"]:last-child,
+    div:has(> [data-testid="column"]:nth-child(2)) > [data-testid="column"]:last-child {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        max-width: none !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
         justify-content: stretch !important;
-        overflow: hidden !important;
-        margin: 0 !important;
         padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
         border: none !important;
-    }}
+        box-sizing: border-box !important;
+    }
 
-    /* Stretch all child wrappers inside left column */
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child > div,
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child > div,
-    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child > div,
-    .block-container > div > [data-testid="stHorizontalBlock"] > [data-testid="column"]:first-child > div,
-    .block-container [data-testid="column"]:first-child [data-testid="stVerticalBlock"],
-    .block-container [data-testid="column"]:first-child [data-testid="stElementContainer"],
-    .block-container [data-testid="column"]:first-child .stMarkdown,
-    .block-container [data-testid="column"]:first-child [data-testid="stMarkdownContainer"] {{
+    div:has(> [data-testid="stColumn"]:nth-child(2)) > [data-testid="stColumn"]:last-child > div,
+    div:has(> [data-testid="column"]:nth-child(2)) > [data-testid="column"]:last-child > div,
+    div:has(> [data-testid="stColumn"]:nth-child(2)) > [data-testid="stColumn"]:last-child .stMarkdown,
+    div:has(> [data-testid="column"]:nth-child(2)) > [data-testid="column"]:last-child .stMarkdown,
+    div:has(> [data-testid="stColumn"]:nth-child(2)) > [data-testid="stColumn"]:last-child [data-testid="stMarkdownContainer"],
+    div:has(> [data-testid="column"]:nth-child(2)) > [data-testid="column"]:last-child [data-testid="stMarkdownContainer"] {
         height: 100% !important;
-        min-height: 100vh !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
+        min-height: 100% !important;
         display: flex !important;
         flex-direction: column !important;
         flex: 1 1 100% !important;
-    }}
-
-    .auth-hero-container {{
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 100vh !important;
-        margin: 0 !important;
         padding: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        overflow: hidden !important;
-        position: relative !important;
-    }}
-
-    .auth-hero-img {{
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 100vh !important;
-        object-fit: cover !important;
-        object-position: center center !important;
-        display: block !important;
-        pointer-events: none !important;
-        user-select: none !important;
-        border: none !important;
-    }}
-
-    /* RIGHT CLINICAL AUTH PANEL (54% width, light clinical, vertically centered) */
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
-    .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
-    .block-container > div > [data-testid="stElementContainer"] > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child,
-    .block-container > div > [data-testid="stHorizontalBlock"] > [data-testid="column"]:last-child {{
-        flex: 0 0 54% !important;
-        width: 54% !important;
-        max-width: 54% !important;
-        min-width: 54% !important;
-        background-color: #F1F5F5 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: center !important;
-        padding: 20px 40px !important;
-        position: relative !important;
-        box-sizing: border-box !important;
-        overflow-y: auto !important;
         margin: 0 !important;
-        border: none !important;
-    }}
-
-    /* Centered 350px card container inside right column */
-    .block-container [data-testid="column"]:last-child > [data-testid="stVerticalBlock"],
-    .block-container [data-testid="column"]:last-child > div > [data-testid="stVerticalBlock"],
-    .block-container [data-testid="column"]:last-child > div {{
-        width: 350px !important;
-        max-width: 350px !important;
-        min-width: 300px !important;
-        margin: auto !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: stretch !important;
-        gap: 0 !important;
-    }}
-
-    .block-container [data-testid="column"]:last-child [data-testid="stElementContainer"],
-    .block-container [data-testid="column"]:last-child [data-testid="stForm"] {{
-        width: 350px !important;
-        max-width: 350px !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-    }}
+    }
 
     /* =========================================================================
-       3. NESTED SWITCHER ROW RESET
+       3. BRAND HEADER BADGE (Top Left)
        ========================================================================= */
-    [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {{
-        min-height: auto !important;
-        height: auto !important;
-        width: 350px !important;
-        max-width: 350px !important;
-        margin: 8px auto 0 auto !important;
-        padding: 0 !important;
+    .auth-brand-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 22px;
+        background: #2A1860;
+        border-radius: 16px;
+        align-self: flex-start;
+        box-sizing: border-box;
+        width: fit-content;
+    }
+
+    .auth-brand-ecg {
+        width: 48px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .auth-brand-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .auth-brand-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #FFFFFF;
+        line-height: 1.1;
+        margin: 0;
+        letter-spacing: -0.01em;
+    }
+
+    .auth-brand-subtitle {
+        font-size: 13px;
+        font-weight: 500;
+        color: #F9A8D4;
+        margin-top: 2px;
+        line-height: 1.2;
+    }
+
+    /* =========================================================================
+       4. WHITE LOGIN CARD (stForm)
+       ========================================================================= */
+    [data-testid="stForm"] {
+        background: #FFFFFF !important;
+        border-radius: 24px !important;
+        box-shadow: 0 16px 48px rgba(11, 31, 58, 0.1) !important;
+        padding: 40px !important;
+        box-sizing: border-box !important;
+        border: none !important;
+        border-top: 6px solid #6D28D9 !important;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 16px !important;
+        margin: 0 !important;
+    }
+
+    .auth-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+    }
+
+    .auth-card-lock-icon {
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+    }
+
+    .auth-card-title {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: #14233B;
+        line-height: 1.2;
+    }
+
+    /* Form Field Labels */
+    .auth-field-label {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #14233B !important;
+        margin-bottom: 2px !important;
+        margin-top: 2px !important;
+    }
+
+    /* Text Inputs */
+    [data-testid="stTextInput"] {
+        margin-bottom: 4px !important;
+        width: 100% !important;
+    }
+
+    [data-testid="stTextInputRootElement"] {
+        background-color: #F1ECFA !important;
+        border: 0 !important;
+        border-bottom: 2.5px solid #6B5B95 !important;
+        border-radius: 10px 10px 0 0 !important;
+        box-shadow: none !important;
+        height: 52px !important;
+        position: relative !important;
+        box-sizing: border-box !important;
+        transition: all 0.2s ease !important;
+        width: 100% !important;
+    }
+
+    [data-testid="stTextInputRootElement"]:focus-within {
+        border-bottom-color: #6D28D9 !important;
+        background-color: #ECE5F8 !important;
+    }
+
+    /* User icon in username input */
+    [data-testid="stTextInput"]:has(input[type="text"]) [data-testid="stTextInputRootElement"]::before {
+        content: "";
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21c0-4 3.6-7 8-7s8 3 8 7'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: contain;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    /* Padlock icon in password input */
+    [data-testid="stTextInput"]:has(input[type="password"]) [data-testid="stTextInputRootElement"]::before {
+        content: "";
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='10' rx='2'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: contain;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    [data-testid="stTextInput"] input {
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        font-family: inherit !important;
+        font-size: 16px !important;
+        color: #14233B !important;
+        height: 50px !important;
+        padding-left: 44px !important;
+        padding-right: 44px !important;
+        box-sizing: border-box !important;
+    }
+
+    [data-testid="stTextInput"] input::placeholder {
+        color: #8E8B99 !important;
+        font-size: 16px !important;
+    }
+
+    /* Password reveal button */
+    [data-testid="stTextInput"] button {
+        color: #475569 !important;
+        background: transparent !important;
+        border: none !important;
+    }
+    [data-testid="stTextInput"] button:hover {
+        color: #14233B !important;
+    }
+
+    /* Action row inside stForm */
+    [data-testid="stForm"] div:has(> [data-testid="stColumn"]),
+    [data-testid="stForm"] div:has(> [data-testid="column"]) {
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
-        justify-content: center !important;
-        gap: 8px !important;
-        column-gap: 8px !important;
-    }}
+        justify-content: space-between !important;
+        gap: 12px !important;
+        margin-top: 10px !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        min-height: 54px !important;
+        width: 100% !important;
+    }
 
-    [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] > [data-testid="column"] {{
-        min-height: auto !important;
-        height: auto !important;
-        width: auto !important;
-        flex: 1 1 auto !important;
-        max-width: none !important;
-        min-width: 0 !important;
+    [data-testid="stForm"] div:has(> [data-testid="stColumn"]) > [data-testid="stColumn"],
+    [data-testid="stForm"] div:has(> [data-testid="column"]) > [data-testid="column"] {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
         padding: 0 !important;
         margin: 0 !important;
-        background: transparent !important;
-    }}
-
-    /* =========================================================================
-       4. FORM ELEMENTS STYLING
-       ========================================================================= */
-    [data-testid="stHorizontalBlock"] [data-testid="stForm"] {{
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        margin-bottom: 0 !important;
-        width: 350px !important;
-        max-width: 350px !important;
-    }}
-
-    /* Auth Header (Lock Icon + Heading text) */
-    .auth-title-container {{
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 22px;
-        width: 350px;
-        max-width: 350px;
-    }}
-
-    .auth-title-text {{
-        color: #142A35 !important;
-        font-size: 1.55rem !important;
-        font-weight: 700 !important;
-        letter-spacing: -0.02em;
-        line-height: 1.2;
-    }}
-
-    /* Form Field Labels */
-    .auth-field-label {{
-        font-size: 0.88rem !important;
-        font-weight: 600 !important;
-        color: #263B43 !important;
-        margin-bottom: 6px !important;
-        margin-top: 14px !important;
-    }}
-
-    /* Input Fields with Inner Icons */
-    [data-testid="column"]:last-child [data-testid="stTextInput"] {{
-        margin-bottom: 6px !important;
-        width: 350px !important;
-        max-width: 350px !important;
-    }}
-
-    [data-testid="column"]:last-child [data-testid="stTextInputRootElement"] {{
-        background-color: #FFFFFF !important;
-        border: 1.5px solid #B8C8CB !important;
-        border-radius: 10px !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
-        height: 46px !important;
-        position: relative !important;
-        transition: all 0.15s ease !important;
-        width: 350px !important;
-        max-width: 350px !important;
-    }}
-
-    [data-testid="column"]:last-child [data-testid="stTextInputRootElement"]:focus-within {{
-        border-color: #0E5C46 !important;
-        box-shadow: 0 0 0 3px rgba(14, 92, 70, 0.12) !important;
-    }}
-
-    /* User Avatar icon inside Username field */
-    [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="text"]) [data-testid="stTextInputRootElement"]::before {{
-        content: "";
-        position: absolute;
-        left: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 18px;
-        height: 18px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23398D85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-size: contain;
-        z-index: 3;
-        pointer-events: none;
-    }}
-
-    [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="text"]) input {{
-        padding-left: 42px !important;
-        font-size: 0.92rem !important;
-        color: #263B43 !important;
-        height: 44px !important;
-    }}
-
-    /* Padlock icon inside Password field */
-    [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="password"]) [data-testid="stTextInputRootElement"]::before {{
-        content: "";
-        position: absolute;
-        left: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 18px;
-        height: 18px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23398D85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='11' x='3' y='11' rx='2' ry='2'/%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-size: contain;
-        z-index: 3;
-        pointer-events: none;
-    }}
-
-    [data-testid="column"]:last-child [data-testid="stTextInput"]:has(input[type="password"]) input {{
-        padding-left: 42px !important;
-        font-size: 0.92rem !important;
-        color: #263B43 !important;
-        height: 44px !important;
-    }}
-
-    /* Full-width Warm Orange Gradient Submit Button */
-    [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] {{
-        width: 350px !important;
-        max-width: 350px !important;
-        margin-top: 18px !important;
-    }}
-
-    [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] > button {{
-        background: linear-gradient(90deg, #FF791F 0%, #FF5722 100%) !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 12px !important;
-        font-size: 1rem !important;
-        font-weight: 700 !important;
-        height: 46px !important;
-        width: 100% !important;
-        box-shadow: 0 6px 15px rgba(255, 87, 34, 0.25) !important;
-        transition: all 0.2s ease !important;
-    }}
-
-    [data-testid="column"]:last-child [data-testid="stFormSubmitButton"] > button:hover {{
-        transform: translateY(-1px) !important;
-        box-shadow: 0 8px 20px rgba(255, 87, 34, 0.35) !important;
-    }}
-
-    /* Forgot Password Link (aligned right beneath the button) */
-    .auth-forgot-row {{
-        text-align: right !important;
-        margin-top: 8px !important;
-        margin-bottom: 22px !important;
-        width: 350px !important;
-        max-width: 350px !important;
-    }}
-
-    .auth-forgot-link {{
-        color: #183D45 !important;
-        font-size: 0.82rem !important;
-        font-weight: 500 !important;
-        text-decoration: none !important;
-        transition: color 0.15s ease !important;
-    }}
-
-    .auth-forgot-link:hover {{
-        color: #183D45 !important;
-        text-decoration: underline !important;
-    }}
-
-    /* Secondary Switcher (Don't have an account? [ Create Account ]) */
-    .auth-switch-label-wrap {{
-        text-align: right !important;
-        color: #183D45 !important;
-        font-size: 0.88rem !important;
-        font-weight: 500 !important;
-        line-height: 34px !important;
-        white-space: nowrap !important;
-    }}
-
-    [data-testid="column"]:last-child .stButton {{
+        min-height: auto !important;
+        height: auto !important;
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-start !important;
-    }}
+        width: auto !important;
+        max-width: none !important;
+        flex: 1 1 auto !important;
+    }
 
-    [data-testid="column"]:last-child .stButton > button {{
+    /* Submit Button: purple pill #6D28D9 */
+    [data-testid="stFormSubmitButton"] {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    [data-testid="stFormSubmitButton"] > button {
+        height: 54px !important;
+        border: 0 !important;
+        border-radius: 999px !important;
+        background: #6D28D9 !important;
+        color: #FFFFFF !important;
+        font-family: inherit !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        box-shadow: 0 8px 20px rgba(109, 40, 217, 0.3) !important;
+        transition: all 0.2s ease !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    [data-testid="stFormSubmitButton"] > button:hover {
+        background: #5B21B6 !important;
+        box-shadow: 0 10px 24px rgba(109, 40, 217, 0.45) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Forgot Password link */
+    .auth-forgot-link-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        min-height: 54px;
+        height: 54px;
+        width: 100%;
+    }
+
+    .auth-forgot-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #5B21B6;
+        text-decoration: none;
+        transition: color 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .auth-forgot-link:hover {
+        color: #DB2777;
+        text-decoration: underline;
+    }
+
+    /* =========================================================================
+       5. BOTTOM SWITCHER CARD (Don't have an account? [ Create Account ])
+       ========================================================================= */
+    div:has(> [data-testid="stColumn"]:nth-child(2)):not(.block-container > *):not([data-testid="stForm"] *),
+    div:has(> [data-testid="column"]:nth-child(2)):not(.block-container > *):not([data-testid="stForm"] *) {
+        background: #FFFFFF !important;
+        border-radius: 16px !important;
+        box-shadow: 0 6px 20px rgba(11, 31, 58, 0.07) !important;
+        padding: 14px 20px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 16px !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        min-height: auto !important;
+        height: auto !important;
+        margin-top: 10px !important;
+    }
+
+    div:has(> [data-testid="stColumn"]:nth-child(2)):not(.block-container > *):not([data-testid="stForm"] *) > [data-testid="stColumn"],
+    div:has(> [data-testid="column"]:nth-child(2)):not(.block-container > *):not([data-testid="stForm"] *) > [data-testid="column"] {
         background: transparent !important;
-        border: 1.5px solid #577B7A !important;
-        color: #183D45 !important;
-        border-radius: 8px !important;
-        padding: 4px 14px !important;
-        font-size: 0.84rem !important;
-        font-weight: 600 !important;
+        border: none !important;
         box-shadow: none !important;
-        height: 34px !important;
-        min-height: 34px !important;
-        line-height: 1.2 !important;
-        transition: all 0.15s ease !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: auto !important;
+        height: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        flex: 1 1 auto !important;
+        width: auto !important;
+        max-width: none !important;
+    }
+
+    .auth-switch-label {
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        color: #14233B !important;
+        line-height: 44px !important;
+        margin: 0 !important;
         white-space: nowrap !important;
-    }}
+    }
 
-    [data-testid="column"]:last-child .stButton > button:hover {{
-        background: #E5ECE8 !important;
-        border-color: #2D4840 !important;
-        color: #112520 !important;
-        transform: none !important;
+    div:has(> [data-testid="stColumn"]:nth-child(2)):not([data-testid="stForm"] *) .stButton,
+    div:has(> [data-testid="column"]:nth-child(2)):not([data-testid="stForm"] *) .stButton {
+        display: flex !important;
+        justify-content: flex-end !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    div:has(> [data-testid="stColumn"]:nth-child(2)):not([data-testid="stForm"] *) .stButton > button,
+    div:has(> [data-testid="column"]:nth-child(2)):not([data-testid="stForm"] *) .stButton > button {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 44px !important;
+        height: 44px !important;
+        padding: 0 24px !important;
+        border: 1.5px solid #14233B !important;
+        border-radius: 999px !important;
+        text-decoration: none !important;
+        font-family: inherit !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #14233B !important;
+        background: transparent !important;
         box-shadow: none !important;
-    }}
+        transition: all 0.2s ease !important;
+        white-space: nowrap !important;
+        margin: 0 !important;
+    }
 
-    /* Subtle Corner Sparkle */
-    .auth-corner-sparkle {{
-        position: fixed !important;
-        bottom: 28px !important;
-        right: 36px !important;
-        pointer-events: none !important;
-        z-index: 10 !important;
-    }}
+    div:has(> [data-testid="stColumn"]:nth-child(2)):not([data-testid="stForm"] *) .stButton > button:hover,
+    div:has(> [data-testid="column"]:nth-child(2)):not([data-testid="stForm"] *) .stButton > button:hover {
+        background: #F1ECFA !important;
+        border-color: #6D28D9 !important;
+        color: #6D28D9 !important;
+    }
 
-    /* Mobile Responsive */
-    @media (max-width: 820px) {{
-        .block-container > [data-testid="stVerticalBlock"] > [data-testid="stHorizontalBlock"],
-        .block-container > div > [data-testid="stHorizontalBlock"] {{
+    /* =========================================================================
+       6. RIGHT HERO BANNER (Clinical Purple, DNA Helix, 3 Feature Badges)
+       ========================================================================= */
+    .auth-hero-banner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 696px;
+        border-radius: 28px;
+        overflow: hidden;
+        background: linear-gradient(150deg, #2A1860 0%, #6B2FB3 100%);
+        padding: 56px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .auth-hero-dna {
+        position: absolute;
+        right: 50px;
+        top: 30px;
+        width: 230px;
+        height: 690px;
+        opacity: 0.4;
+        pointer-events: none;
+    }
+
+    .auth-hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .auth-hero-title {
+        font-size: 50px;
+        font-weight: 800;
+        color: #FFFFFF;
+        line-height: 1.08;
+        max-width: 420px;
+        letter-spacing: -0.01em;
+        margin: 0;
+    }
+
+    .auth-hero-subtitle {
+        font-size: 21px;
+        font-weight: 500;
+        color: #E3D5FA;
+        margin-top: 14px;
+        line-height: 1.3;
+    }
+
+    .auth-hero-cards {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-top: 44px;
+    }
+
+    .auth-hero-card {
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .auth-hero-card:hover {
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .auth-hero-card-1 {
+        width: 150px;
+        height: 110px;
+    }
+
+    .auth-hero-card-2 {
+        width: 110px;
+        height: 110px;
+    }
+
+    .auth-hero-card-3 {
+        width: 110px;
+        height: 110px;
+    }
+
+    .auth-hero-bottom-ecg {
+        width: 460px;
+        max-width: 100%;
+        height: 70px;
+        margin-top: 40px;
+        display: block;
+    }
+
+    /* Alert notifications inside form */
+    [data-testid="stAlert"] {
+        border-radius: 14px !important;
+        font-size: 14px !important;
+        margin-top: 10px !important;
+    }
+
+    /* =========================================================================
+       7. RESPONSIVE QUERIES
+       ========================================================================= */
+    @media (max-width: 960px) {
+        div:has(> [data-testid="stColumn"]:nth-child(2)),
+        div:has(> [data-testid="column"]:nth-child(2)) {
             flex-direction: column !important;
-        }}
-        .block-container [data-testid="column"]:first-child {{
+            gap: 24px !important;
+        }
+        div:has(> [data-testid="stColumn"]:nth-child(2)) > [data-testid="stColumn"]:first-child,
+        div:has(> [data-testid="column"]:nth-child(2)) > [data-testid="column"]:first-child {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: 1 1 auto !important;
+        }
+        div:has(> [data-testid="stColumn"]:nth-child(2)) > [data-testid="stColumn"]:last-child,
+        div:has(> [data-testid="column"]:nth-child(2)) > [data-testid="column"]:last-child {
             width: 100% !important;
             flex: 1 1 auto !important;
-            min-height: 320px !important;
-            max-width: 100% !important;
-        }}
-        .block-container [data-testid="column"]:last-child {{
-            width: 100% !important;
-            flex: 1 1 auto !important;
-            min-height: auto !important;
-            padding: 30px 20px !important;
-            max-width: 100% !important;
-        }}
-        .block-container [data-testid="column"]:last-child > [data-testid="stVerticalBlock"],
-        .block-container [data-testid="column"]:last-child > div > [data-testid="stVerticalBlock"],
-        .block-container [data-testid="column"]:last-child > div,
-        .block-container [data-testid="column"]:last-child [data-testid="stElementContainer"],
-        .block-container [data-testid="column"]:last-child [data-testid="stForm"],
-        .auth-title-container,
-        .auth-forgot-row,
-        [data-testid="column"]:last-child [data-testid="stTextInput"],
-        [data-testid="column"]:last-child [data-testid="stTextInputRootElement"],
-        [data-testid="column"]:last-child [data-testid="stFormSubmitButton"],
-        [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {{
-            width: 100% !important;
-            max-width: 100% !important;
-        }}
-    }}
-    </style>
-    """
+            min-height: 480px !important;
+        }
+        .auth-hero-banner {
+            padding: 36px !important;
+            min-height: 480px !important;
+        }
+        .auth-hero-title {
+            font-size: 36px !important;
+        }
+    }
+    </style>"""
     st.markdown(css, unsafe_allow_html=True)
 
 
-def render_auth_left_panel():
-    """
-    Renders the emerald hero left panel using an HTML img tag with base64 data URI
-    and background-image to ensure 100% reliable full-bleed rendering without markdown bugs.
-    """
-    data_uri = get_auth_hero_data_uri()
-    st.markdown(
-        f'<div class="auth-hero-container"><img src="{data_uri}" class="auth-hero-img" alt="Health Portal Multi-Disease Detection System" /></div>',
-        unsafe_allow_html=True,
+def render_auth_brand_badge():
+    """Renders the dark violet 'Health Portal / Multi-Disease Detection System' badge."""
+    html = (
+        '<div class="auth-brand-badge">'
+        '<svg aria-hidden="true" viewBox="0 0 80 40" class="auth-brand-ecg">'
+        '<path d="M0 20 H18 L24 20 L30 6 L38 34 L46 2 L52 20 H80" fill="none" stroke="#FBBF24" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path>'
+        '</svg>'
+        '<div class="auth-brand-text">'
+        '<div class="auth-brand-title">Health Portal</div>'
+        '<div class="auth-brand-subtitle">Multi-Disease Detection System</div>'
+        '</div>'
+        '</div>'
     )
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def render_auth_card_header(title: str = "Login to Health Portal"):
+    """Renders the padlock icon and title header for the auth card."""
+    html = (
+        '<div class="auth-card-header">'
+        '<svg aria-hidden="true" viewBox="0 0 24 24" class="auth-card-lock-icon" fill="none" stroke="#14233B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'
+        '<rect x="4" y="11" width="16" height="10" rx="2" fill="#14233B"></rect>'
+        '<path d="M8 11V7a4 4 0 0 1 8 0v4"></path>'
+        '</svg>'
+        f'<h1 class="auth-card-title">{title}</h1>'
+        '</div>'
+    )
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def render_auth_hero_panel():
+    """Renders the clinical purple hero banner matching Clinical.dc.html."""
+    html = (
+        '<div class="auth-hero-banner">'
+        '<svg class="auth-hero-dna" aria-hidden="true" viewBox="0 0 200 600">'
+        '<path d="M100 0 C180 50 180 100 100 150 S20 250 100 300 S180 400 100 450 S20 550 100 600" fill="none" stroke="#F472B6" stroke-width="3"></path>'
+        '<path d="M100 0 C20 50 20 100 100 150 S180 250 100 300 S20 400 100 450 S180 550 100 600" fill="none" stroke="#FBBF24" stroke-width="3"></path>'
+        '<g stroke="#C4B0EA" stroke-width="2">'
+        '<line x1="70" y1="25" x2="130" y2="25"></line><line x1="48" y1="50" x2="152" y2="50"></line><line x1="40" y1="75" x2="160" y2="75"></line><line x1="48" y1="100" x2="152" y2="100"></line><line x1="70" y1="125" x2="130" y2="125"></line>'
+        '<line x1="70" y1="175" x2="130" y2="175"></line><line x1="48" y1="200" x2="152" y2="200"></line><line x1="40" y1="225" x2="160" y2="225"></line><line x1="48" y1="250" x2="152" y2="250"></line><line x1="70" y1="275" x2="130" y2="275"></line>'
+        '<line x1="70" y1="325" x2="130" y2="325"></line><line x1="48" y1="350" x2="152" y2="350"></line><line x1="40" y1="375" x2="160" y2="375"></line><line x1="48" y1="400" x2="152" y2="400"></line><line x1="70" y1="425" x2="130" y2="425"></line>'
+        '<line x1="70" y1="475" x2="130" y2="475"></line><line x1="48" y1="500" x2="152" y2="500"></line><line x1="40" y1="525" x2="160" y2="525"></line><line x1="48" y1="550" x2="152" y2="550"></line><line x1="70" y1="575" x2="130" y2="575"></line>'
+        '</g>'
+        '</svg>'
+        '<div class="auth-hero-content">'
+        '<div class="auth-hero-title">AI-powered mediligence</div>'
+        '<div class="auth-hero-subtitle">With Digital Health Diagnostics</div>'
+        '<div class="auth-hero-cards">'
+        '<div class="auth-hero-card auth-hero-card-1">'
+        '<svg aria-hidden="true" viewBox="0 0 120 60" style="width: 110px; height: 55px"><path d="M0 30 H34 L42 30 L48 10 L56 52 L64 4 L72 30 H120" fill="none" stroke="#FBBF24" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path></svg>'
+        '</div>'
+        '<div class="auth-hero-card auth-hero-card-2">'
+        '<svg aria-hidden="true" viewBox="0 0 64 64" style="width: 60px; height: 60px"><path d="M32 56 C8 40 6 22 16 14 C23 8 30 12 32 18 C34 12 41 8 48 14 C58 22 56 40 32 56 Z" fill="#FB7185"></path><path d="M14 32 H26 L30 24 L36 40 L40 32 H50" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path></svg>'
+        '</div>'
+        '<div class="auth-hero-card auth-hero-card-3">'
+        '<svg aria-hidden="true" viewBox="0 0 64 64" style="width: 52px; height: 52px"><rect x="22" y="8" width="20" height="48" rx="5" fill="#F9A8D4"></rect><rect x="8" y="22" width="48" height="20" rx="5" fill="#F9A8D4"></rect></svg>'
+        '</div>'
+        '</div>'
+        '<svg class="auth-hero-bottom-ecg" aria-hidden="true" viewBox="0 0 460 70">'
+        '<path d="M0 35 H130 L142 35 L152 10 L164 62 L176 4 L188 35 H290 L302 26 L314 35 H460" fill="none" stroke="#F472B6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path>'
+        '</svg>'
+        '</div>'
+        '</div>'
+    )
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def render_auth_left_panel():
+    """Backwards-compatibility forwarder for existing callers."""
+    render_auth_hero_panel()
+
 
 
